@@ -28,6 +28,12 @@ Options are:
     --ninja
         Choose Secret Ninja encoding.
 
+    --only <generator>
+        Choose a generator instead of printing all nine (default).
+        <generator> must be one of:
+            Diceware, EFF, Alternate, Pseudowords, Base94, Base64,
+            Base32, Base16, Base10.
+
     --min-entropy <number>
         Default 70-bits.
         Set a minimum entropy requirement in bits.

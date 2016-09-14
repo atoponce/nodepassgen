@@ -30,6 +30,12 @@ function print_usage() {
     console.log("   --ninja");
     console.log("       Choose Secret Ninja encoding.");
     console.log("");
+    console.log("   --only <generator>");
+    console.log("       Choose a generator instead of printing all nine (default).");
+    console.log("       <generator> must be one of:")
+    console.log("           Diceware, EFF, Alternate, Pseudowords, Base94, Base64,");
+    console.log("           Base32, Base16, Base10.");
+    console.log("");
     console.log("   --min-entropy <number>");
     console.log("       Default 70-bits.");
     console.log("       Set a minimum entropy requirement in bits.");
