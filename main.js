@@ -418,15 +418,79 @@ function generate_base10() {
 
 if (args.indexOf("--help") != -1) print_usage();
 
-results.push(generate_diceware());
-results.push(generate_eff());
-results.push(generate_alternate());
-results.push(generate_pseudowords());
-results.push(generate_base94());
-results.push(generate_base64());
-results.push(generate_base32());
-results.push(generate_base16());
-results.push(generate_base10());
+if (args.indexOf("--only") != -1) {
+    switch(args[args.indexOf("--only")+1]) {
+        case "Diceware":
+        case "diceware":
+            results.push(generate_diceware());
+            break;
+        case "EFF":
+        case "Eff":
+        case "eff":
+            results.push(generate_eff());
+            break;
+        case "Alternate":
+        case "alternate":
+            results.push(generate_alternate());
+            break;
+        case "Pseudowords":
+        case "pseudowords":
+        case "Pseudoword":
+        case "pseudoword":
+        case "Pseudo":
+        case "pseudo":
+            results.push(generate_pseudowords());
+            break;
+        case "Base94":
+        case "base94":
+        case "Base-94":
+        case "base-94":
+            results.push(generate_base94());
+            break;
+        case "Base64":
+        case "base64":
+        case "Base-64":
+        case "base-64":
+            results.push(generate_base64());
+            break;
+        case "Base32":
+        case "base32":
+        case "Base-32":
+        case "base-32":
+            results.push(generate_base32());
+            break;
+        case "Base16":
+        case "base16":
+        case "Base-16":
+        case "base-16":
+        case "Hexadecimal":
+        case "hexadecimal":
+            results.push(generate_base16());
+            break;
+        case "Base10":
+        case "base10":
+        case "Base-10":
+        case "base-10":
+        case "Decimal":
+        case "decimal":
+            results.push(generate_base10());
+            break;
+        default:
+            console.log("Unknown generator: " + args[args.indexOf("--only")+1])
+            process.exit(1);
+    }
+}
+else {
+    results.push(generate_diceware());
+    results.push(generate_eff());
+    results.push(generate_alternate());
+    results.push(generate_pseudowords());
+    results.push(generate_base94());
+    results.push(generate_base64());
+    results.push(generate_base32());
+    results.push(generate_base16());
+    results.push(generate_base10());
+}
 
 var json_ret = JSON.stringify(results, null, 2);
 console.log(json_ret);
