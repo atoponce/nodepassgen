@@ -40,6 +40,7 @@ function print_usage() {
     console.log("   --min-entropy <number>");
     console.log("       Default 70-bits.");
     console.log("       Set a minimum entropy requirement in bits.");
+    console.log("");
     console.log("   --json");
     console.log("       Output the passwords and meta in JSON format.")
     console.log("");

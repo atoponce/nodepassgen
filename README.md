@@ -38,10 +38,25 @@ Options are:
         Default 70-bits.
         Set a minimum entropy requirement in bits.
 
+    --json
+        Output the passwords and meta in JSON format.
 
-Output is valid JSON, meant to be both human and machine parseable.
+Output can be valid JSON, meant to be both human and machine parseable. Default
+is unformatted plaintext:
 
-    $ nodejs main.js
+    $ nodejs nodepassgen
+    Diceware(English): aroma yam bj knee erda above
+    EFF(Short): olive cork sneer swirl eagle curvy kilt
+    Alternate(PGP): Pandora upshot edict molecule alone infancy gossamer
+    indulge
+    Pseudowords(Bubble Babble): xubyz-zypyp-hesur-pivox-nasax
+    Base94(null): slWH[bi|W~1
+    Base64(null): 4Vk9XhbAohQB
+    Base32(null): pxz4fk9awv0nc4
+    Base16(null): 7bf58e86556ce55962
+    Base10(null): 7365319826201997256123
+
+    $ nodejs nodepassgen --json
     [
       {
 	    "Generator": "Diceware",
