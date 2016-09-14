@@ -1,3 +1,4 @@
+#!/usr/bin/nodejs
 const crypto = require('crypto');
 
 var spaces=false;
@@ -39,6 +40,9 @@ function print_usage() {
     console.log("   --min-entropy <number>");
     console.log("       Default 70-bits.");
     console.log("       Set a minimum entropy requirement in bits.");
+    console.log("   --json");
+    console.log("       Output the passwords and meta in JSON format.")
+    console.log("");
     process.exit();
 }
 
@@ -498,5 +502,13 @@ else {
     results.push(generate_base10());
 }
 
-var json_ret = JSON.stringify(results, null, 2);
-console.log(json_ret);
+
+if (args.indexOf("--json") != -1) {
+    var json_ret = JSON.stringify(results, null, 2);
+    console.log(json_ret);
+}
+else {
+    for (var i=0; i<results.length; i++) {
+        console.log(results[i].Generator + "(" + results[i].Wordlist + "): " + results[i].Password);
+    }
+}
