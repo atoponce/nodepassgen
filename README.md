@@ -5,32 +5,32 @@ such, enough changes are made to make it its own separate project.
 
 Options are:
 
-   --help
-       Print this help and exit.
+    --help
+        Print this help and exit.
 
-   --diceware <language>
-       Default English.
-       Choose a Diceware language. <language> must be one of:
-           Beale, Catalan, Danish, Dutch, English, Esperanto,
-           Finnish, French, German, Italian, Japanese Maori,
-	   Norwegian, Polish, Spanish, Swedish, Turkish.
+    --diceware <language>
+        Default English.
+        Choose a Diceware language. <language> must be one of:
+            Beale, Catalan, Danish, Dutch, English, Esperanto,
+            Finnish, French, German, Italian, Japanese Maori,
+            Norwegian, Polish, Spanish, Swedish, Turkish.
 
-   --eff <wordlist>
-       Default Short.
-       Choose an EFF wordlist. <wordlist> must be one of:
-           Distant, Long, Short.
+    --eff <wordlist>
+        Default Short.
+        Choose an EFF wordlist. <wordlist> must be one of:
+            Distant, Long, Short.
 
-   --alternate <wordlist>
-       Default PGP.
-       Choose an alternate wordlist. <wordlist> must be one of:
-           Bitcoin, Elvish, Klingon, PGP, RockYou, Simpsons.
+    --alternate <wordlist>
+        Default PGP.
+        Choose an alternate wordlist. <wordlist> must be one of:
+            Bitcoin, Elvish, Klingon, PGP, RockYou, Simpsons.
 
-   --ninja
-       Choose Secret Ninja encoding.
+    --ninja
+        Choose Secret Ninja encoding.
 
-   --min-entropy <number>
-       Default 70-bits.
-       Set a minimum entropy requirement in bits.
+    --min-entropy <number>
+        Default 70-bits.
+        Set a minimum entropy requirement in bits.
 
 
 Output is valid JSON, meant to be both human and machine parseable.
