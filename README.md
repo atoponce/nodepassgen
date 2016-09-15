@@ -47,8 +47,7 @@ is unformatted plaintext:
     $ nodejs nodepassgen
     Diceware(English): aroma yam bj knee erda above
     EFF(Short): olive cork sneer swirl eagle curvy kilt
-    Alternate(PGP): Pandora upshot edict molecule alone infancy gossamer
-    indulge
+    Alternate(PGP): Pandora upshot edict molecule alone infancy gossamer indulge
     Pseudowords(Bubble Babble): xubyz-zypyp-hesur-pivox-nasax
     Base94(null): slWH[bi|W~1
     Base64(null): 4Vk9XhbAohQB
