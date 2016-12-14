@@ -33,7 +33,7 @@ function print_usage() {
     console.log("");
     console.log("   --only <generator>");
     console.log("       Choose a generator instead of printing all nine (default).");
-    console.log("       <generator> must be one of:")
+    console.log("       <generator> must be one of:");
     console.log("           Diceware, EFF, Alternate, Pseudowords, Base94, Base64,");
     console.log("           Base32, Base16, Base10.");
     console.log("");
@@ -42,7 +42,10 @@ function print_usage() {
     console.log("       Set a minimum entropy requirement in bits.");
     console.log("");
     console.log("   --json");
-    console.log("       Output the passwords and meta in JSON format.")
+    console.log("       Output the passwords and meta in JSON format.");
+    console.log("");
+    console.log("   --hyphenate");
+    console.log("       Add hyphens to the Diceware, EFF, and Alternate passphrases.");
     console.log("");
     process.exit();
 }
@@ -186,6 +189,9 @@ function generate_diceware() {
     var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
+    if (args.indexOf("--hyphenate") != -1) {
+        pass = pass.split(" ").join("-");
+    }
     assoc_arr["Generator"] = "Diceware";
     assoc_arr["Wordlist"] = lang;
     assoc_arr["Password"] = pass;
@@ -193,7 +199,6 @@ function generate_diceware() {
     assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
     return assoc_arr;
 }
-
 
 function generate_eff() {
     if (args.indexOf("--eff") != -1) {
@@ -226,6 +231,9 @@ function generate_eff() {
     var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
+    if (args.indexOf("--hyphenate") != -1) {
+        pass = pass.split(" ").join("-");
+    }
     assoc_arr["Generator"] = "EFF";
     assoc_arr["Wordlist"] = eff_set;
     assoc_arr["Password"] = pass;
@@ -283,6 +291,9 @@ function generate_alternate() {
     var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
+    if (args.indexOf("--hyphenate") != -1) {
+        pass = pass.split(" ").join("-");
+    }
     assoc_arr["Generator"] = "Alternate";
     assoc_arr["Wordlist"] = alt_set;
     assoc_arr["Password"] = pass;
