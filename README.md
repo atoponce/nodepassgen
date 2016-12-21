@@ -38,6 +38,10 @@ Options are:
         Default 70-bits.
         Set a minimum entropy requirement in bits.
 
+    --hyphenate
+        Hyphenate the passphrases. Applies only to the Diceware, EFF, and
+        Alternate passphrase generators.
+
     --json
         Output the passwords and meta in JSON format.
 
