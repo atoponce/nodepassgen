@@ -23,7 +23,8 @@ Options are:
     --alternate <wordlist>
         Default PGP.
         Choose an alternate wordlist. <wordlist> must be one of:
-            Bitcoin, Elvish, Klingon, PGP, RockYou, Simpsons.
+            Bitcoin, Elvish, Klingon, PGP,
+            RockYou, Simpsons, Trump.
 
     --ninja
         Choose Secret Ninja encoding.
