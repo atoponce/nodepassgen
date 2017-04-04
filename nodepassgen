@@ -26,7 +26,8 @@ function print_usage() {
     console.log("   --alternate <wordlist>");
     console.log("       Default PGP.");
     console.log("       Choose an alternate wordlist. <wordlist> must be one of:");
-    console.log("           Bitcoin, Elvish, Klingon, PGP, RockYou, Simpsons.");
+    console.log("           Bitcoin, Elvish, Klingon, PGP");
+    console.log("           RockYou, Simpsons, Trump");
     console.log("");
     console.log("   --ninja");
     console.log("       Choose Secret Ninja encoding.");
@@ -57,20 +58,22 @@ function get_entropy() {
     else return 70;
 }
 
+/* Uniform, unbiased, secure, random number generator */
 function sec_rand(count) {
-    // provided by `Sc00bz' at: https://www.reddit.com/r/crypto/comments/4xe21s/
-    var skip = 0x7fffffff - 0x7fffffff % count;
-    var result;
-    var rand;
-    if (((count - 1) & count) === 0) {
-        rand = parseInt(crypto.randomBytes(2).toString('hex'), 16);
-        return rand & (count - 1);
-    }
+    var min, rand;
+
+    // ensure `count' is a 32-bit integer
+    count >>>= 0;
+
+    // force the range of [`min', 2**32] to be a multiple of `count'
+    min = (-count >>> 0) % count;
+
     do {
-        rand = parseInt(crypto.randomBytes(2).toString('hex'), 16);
-        result = rand & 0x7fffffff;
-    } while (result >= skip);
-    return result % count;
+        // crypto.randomBytes(4) range = [0, 2**32]
+        rand = parseInt(crypto.randomBytes(4).toString('hex'), 16);
+    } while (rand < min);
+
+    return rand % count;
 }
 
 function generate_pass(len, set, spaces) {
@@ -226,6 +229,50 @@ function generate_eff() {
         default:
             console.log("Unknown wordlist: " + eff_set);
             process.exit();
+
+    }
+
+    var assoc_arr = {};
+    var entropy = get_entropy();
+    var len = Math.ceil(entropy/Math.log2(wordlist.length));
+    var pass = generate_pass(len, wordlist, true);
+    if (args.indexOf("--hyphenate") != -1) {
+        pass = pass.split(" ").join("-");
+    }
+    assoc_arr["Generator"] = "Diceware";
+    assoc_arr["Wordlist"] = lang;
+    assoc_arr["Password"] = pass;
+    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
+    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
+    return assoc_arr;
+}
+
+function generate_eff() {
+    if (args.indexOf("--eff") != -1) {
+        var eff_set = args[args.indexOf("--eff") + 1];
+    }
+    else var eff_set = "Short";
+
+    var wordlist = [];
+    switch(eff_set) {
+        case "Distant":
+        case "distant":
+            const eff_distant = require('./lists/eff_distant');
+            wordlist = eff_distant.eff_distant;
+            break;
+        case "Long":
+        case "long":
+            const eff_long = require('./lists/eff_long');
+            wordlist = eff_long.eff_long;
+            break;
+        case "Short":
+        case "short":
+            const eff_short = require('./lists/eff_short');
+            wordlist = eff_short.eff_short;
+            break;
+        default:
+            console.log("Unknown wordlist: " + eff_set);
+            process.exit();
     }
     var assoc_arr = {};
     var entropy = get_entropy();
@@ -281,6 +328,11 @@ function generate_alternate() {
         case "simpsons":
             const simpsons_wordlist = require('./lists/simpsons');
             wordlist = simpsons_wordlist.wordlist;
+            break;
+        case "Trump":
+        case "trump":
+            const trump_wordlist = require('./lists/trump');
+            wordlist = trump_wordlist.wordlist;
             break;
         default:
             console.log("Unknown wordlist: " + alt_set);
