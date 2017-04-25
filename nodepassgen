@@ -32,6 +32,12 @@ function print_usage() {
     console.log("   --ninja");
     console.log("       Choose Secret Ninja encoding.");
     console.log("");
+    console.log("   --cosby");
+    console.log("       Choose Bill Cosby Bebob.");
+    console.log("");
+    console.log("   --kpop");
+    console.log("       Choose Korean K-pop words.");
+    console.log("");
     console.log("   --only <generator>");
     console.log("       Choose a generator instead of printing all nine (default).");
     console.log("       <generator> must be one of:");
@@ -367,6 +373,34 @@ function generate_ninja() {
     return [pass, ninja.length, Math.floor(len*Math.log2(ninja.length))];
 }
 
+function generate_cosby() {
+    // 32 unique words = 5 bits of entropy per word
+    var cosby = ['Bada','Badum','Bee','Bloo','Bop','Caw','Derp','Dip','Doo','Dub','Hip','Ka','Loo','Meep','Mim','Moom','Na','Naw','Nerp','Nup','Pa','Papa','Spee','Squee','Squoo','Woobly','Wop','Yee','Zap','Zip','Zop','Zoop','Zow'];
+    var entropy = get_entropy();
+    var len = Math.ceil(entropy/Math.log2(cosby.length));
+    var pass = "";
+    
+    for (i=0; i<len; i++) {
+        pass += cosby[sec_rand(len)];
+        if (i%3 == 2 && i!=len-1) pass += "-";
+    }
+    return [pass, cosby.length, Math.floor(len*Math.log2(cosby.length))];
+}
+
+function generate_kpop() {
+    // 64 unique words = 6 bits of entropy per word
+    var kpop = ['A','Ah','Bae','Bin','Bo','Choi','Chul','Da','Do','Dong','Eun','Gi','Gun','Ha','Hae','Hee','Ho','Hu','Hwa','Hwan','Hye','Hyo','Hyun','Il','In','Ja','Jae','Ji','Jin','Jong','Joo','Joon','Ju','Jun','Jung','Ki','Kun','Kyu','Lee','Mi','Min','Moon','Nam','Ok','Park','Rin','Seo','Seul','Shi','Sik','So','Song','Soo','Su','Sun','Sung','Won','Woo','Ye','Yeon','Yoo','Yu','Yul','Yun'];
+    var entropy = get_entropy();
+    var len = Math.ceil(entropy/Math.log2(kpop.length));
+    var pass = "";
+    
+    for (i=0; i<len; i++) {
+        pass += kpop[sec_rand(len)];
+        if (i%2 == 1 && i!=len-1) pass += "-";
+    }
+    return [pass, kpop.length, Math.floor(len*Math.log2(kpop.length))];
+}
+
 function generate_babble() {
     var pass = [];
     var vowels = "aeiouy";
@@ -399,9 +433,13 @@ function generate_babble() {
 
 function generate_pseudowords() {
     if (args.indexOf("--ninja") != -1) var pw_type = "Secret Ninja"
+    else if (args.indexOf("--cosby") != -1) var pw_type = "Cosby Bebop"
+    else if (args.indexOf("--kpop") != -1) var pw_type = "Korean K-pop"
     else var pw_type = "Bubble Babble";
 
     if (pw_type == "Secret Ninja") var ret = generate_ninja();
+    else if (pw_type == "Cosby Bebop") var ret = generate_cosby();
+    else if (pw_type == "Korean K-pop") var ret = generate_kpop();
     else var ret = generate_babble();
     var assoc_arr = {};
     var pass = ret[0];
