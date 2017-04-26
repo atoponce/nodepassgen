@@ -14,9 +14,10 @@ function print_usage() {
     console.log("   --diceware <language>");
     console.log("       Default English.");
     console.log("       Choose a Diceware language. <language> must be one of:");
-    console.log("           Beale, Catalan, Danish, Dutch, English, Esperanto,");
-    console.log("           Finnish, French, German, Italian, Japanese, Maori,");
-    console.log("           Norwegian, Polish, Spanish, Swedish, Turkish.");
+    console.log("           Basque, Beale, Catalan, Czech, Danish, Dutch,");
+    console.log("           English, Esperanto, Finnish, French, German,");
+    console.log("           Italian, Japanese, Maori, Norwegian, Polish,");
+    console.log("           Russian, Spanish, Swedish, Turkish.");
     console.log("");
     console.log("   --eff <wordlist>");
     console.log("       Default Short.");
@@ -104,6 +105,11 @@ function generate_diceware() {
 
     var wordlist = [];
     switch(lang) {
+        case "Basque":
+        case "basque":
+            const basque_wordlist = require('./lists/basque');
+            wordlist = basque_wordlist.wordlist;
+            break;
         case "Beale":
         case "beale":
             const beale_wordlist = require('./lists/beale');
@@ -113,6 +119,11 @@ function generate_diceware() {
         case "catalan":
             const catalan_wordlist = require('./lists/catalan');
             wordlist = catalan_wordlist.wordlist;
+            break;
+        case "Czech":
+        case "czech":
+            const czech_wordlist = require('./lists/czech');
+            wordlist = czech_wordlist.wordlist;
             break;
         case "Danish":
         case "danish":
@@ -173,6 +184,11 @@ function generate_diceware() {
         case "polish":
             const polish_wordlist = require('./lists/polish');
             wordlist = polish_wordlist.wordlist;
+            break;
+        case "Russian":
+        case "russian":
+            const russian_wordlist = require('./lists/russian');
+            wordlist = russian_wordlist.wordlist;
             break;
         case "Spanish":
         case "spanish":
