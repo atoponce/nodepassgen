@@ -632,6 +632,7 @@ function generate_emoji() {
     var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
+    pass = pass.replace(/ /g,"");
     assoc_arr["Generator"] = "Emoji";
     assoc_arr["Wordlist"] = null;
     assoc_arr["Password"] = pass;
