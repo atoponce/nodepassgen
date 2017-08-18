@@ -12,21 +12,21 @@ function print_usage() {
     console.log("       Print this help and exit.");
     console.log("");
     console.log("   --diceware <language>");
-    console.log("       Default English.");
-    console.log("       Choose a Diceware language. <language> must be one of:");
-    console.log("           Basque, Beale, Catalan, Czech, Danish, Dutch,");
-    console.log("           English, Esperanto, Finnish, French, German,");
-    console.log("           Italian, Japanese, Maori, Norwegian, Polish,");
-    console.log("           Russian, Spanish, Swedish, Turkish.");
+    console.log("       Choose a Diceware language. Default is English.");
+    console.log("       <language> must be one of:");
+    console.log("           Basque, Beale, Bulgarian, Catalan, Chinese, Czech,");
+    console.log("           Danish, Dutch, English, Esperanto, Finnish, French,");
+    console.log("           German, Italian, Japanese, Maori, Norwegian, Polish,");
+    console.log("           Portuguese, Russian, Slovenian, Spanish, Swedish, Turkish.");
     console.log("");
     console.log("   --eff <wordlist>");
-    console.log("       Default Short.");
-    console.log("       Choose an EFF wordlist. <wordlist> must be one of:");
+    console.log("       Choose an EFF wordlist. Default is Short.");
+    console.log("       <wordlist> must be one of:");
     console.log("           Distant, Long, Short.");
     console.log("");
     console.log("   --alternate <wordlist>");
-    console.log("       Default PGP.");
-    console.log("       Choose an alternate wordlist. <wordlist> must be one of:");
+    console.log("       Choose an alternate wordlist. Default is PGP.");
+    console.log("       <wordlist> must be one of:");
     console.log("           Bitcoin, Elvish, Klingon, PGP");
     console.log("           RockYou, Simpsons, Trump");
     console.log("");
@@ -39,15 +39,20 @@ function print_usage() {
     console.log("   --kpop");
     console.log("       Choose Korean K-pop words.");
     console.log("");
+    console.log("   --random <base>");
+    console.log("       Choose a number base to generated. Default is Base94");
+    console.log("       <base> must be one of:");
+    console.log("           Base94, Base64, Base32, Base16, Base10.");
+    console.log("   --emoji");
+    console.log("       Choose emoji. A supporting font is needed to view correctly.");
+    console.log("");
     console.log("   --only <generator>");
-    console.log("       Choose a generator instead of printing all nine (default).");
+    console.log("       Choose a generator instead of printing all six (default).");
     console.log("       <generator> must be one of:");
-    console.log("           Diceware, EFF, Alternate, Pseudowords, Base94, Base64,");
-    console.log("           Base32, Base16, Base10.");
+    console.log("           Diceware, EFF, Alternate, Pseudowords, Random, Emoji");
     console.log("");
     console.log("   --min-entropy <number>");
-    console.log("       Default 70-bits.");
-    console.log("       Set a minimum entropy requirement in bits.");
+    console.log("       Set a minimum entropy requirement in bits. Default is 70.");
     console.log("");
     console.log("   --json");
     console.log("       Output the passwords and meta in JSON format.");
@@ -115,10 +120,20 @@ function generate_diceware() {
             const beale_wordlist = require('./lists/beale');
             wordlist = beale_wordlist.wordlist;
             break;
+        case "Bulgarian":
+        case "bulgarian":
+            const bulgarian_wordlist = require('./lists/bulgarian');
+            wordlist = bulgarian_wordlist.wordlist;
+            break;
         case "Catalan":
         case "catalan":
             const catalan_wordlist = require('./lists/catalan');
             wordlist = catalan_wordlist.wordlist;
+            break;
+        case "Chinese":
+        case "chinese":
+            const chinese_wordlist = require('./lists/chinese');
+            wordlist = chinese_wordlist.wordlist;
             break;
         case "Czech":
         case "czech":
@@ -185,10 +200,20 @@ function generate_diceware() {
             const polish_wordlist = require('./lists/polish');
             wordlist = polish_wordlist.wordlist;
             break;
+        case "Portuguese":
+        case "portuguese":
+            const portuguese_wordlist = require('./lists/portuguese');
+            wordlist = portuguese_wordlist.wordlist;
+            break;
         case "Russian":
         case "russian":
             const russian_wordlist = require('./lists/russian');
             wordlist = russian_wordlist.wordlist;
+            break;
+        case "Slovenian":
+        case "slovenian":
+            const slovenian_wordlist = require('./lists/slovenian');
+            wordlist = slovenian_wordlist.wordlist;
             break;
         case "Spanish":
         case "spanish":
@@ -469,7 +494,6 @@ function generate_pseudowords() {
     return assoc_arr;
 }
 
-
 function generate_base94() {
     var assoc_arr = {};
     var s = '';
@@ -544,6 +568,77 @@ function generate_base10() {
     return assoc_arr;
 }
 
+function generate_random() {
+    var s = "";
+    if (args.indexOf("--random") != -1) {
+        var rand_set = args[args.indexOf("--random") + 1];
+    }
+    else var rand_set = "Base94";
+
+    switch(rand_set) {
+        case "Base94":
+        case "base94":
+        case "Base-94":
+        case "base-94":
+        case "Tetranonagesimal":
+        case "tetranonagesimal":
+            s = generate_base94();
+            break;
+        case "Base64":
+        case "base64":
+        case "Base-64":
+        case "base-64":
+        case "Tetrasexagesimal":
+        case "tetrasexagesimal":
+            s = generate_base64();
+            break;
+        case "Base32":
+        case "base32":
+        case "Base-32":
+        case "base-32":
+        case "Duotrigesimal":
+        case "duotrigesimal":
+            s = generate_base32();
+            break;
+        case "Base16":
+        case "base16":
+        case "Base-16":
+        case "base-16":
+        case "Hexadecimal":
+        case "hexadecimal":
+            s = generate_base16();
+            break;
+        case "Base10":
+        case "base10":
+        case "Base-10":
+        case "base-10":
+        case "Decimal":
+        case "decimal":
+            s = generate_base10();
+            break;
+        default:
+            console.log("Unknown base: " + rand_set);
+            process.exit(1);
+    }
+    return s;
+}
+
+function generate_emoji() {
+    const emoji_wordlist = require('./lists/emoji');
+    var wordlist = emoji_wordlist.wordlist;
+
+    var assoc_arr = {};
+    var entropy = get_entropy();
+    var len = Math.ceil(entropy/Math.log2(wordlist.length));
+    var pass = generate_pass(len, wordlist, true);
+    assoc_arr["Generator"] = "Emoji";
+    assoc_arr["Wordlist"] = null;
+    assoc_arr["Password"] = pass;
+    assoc_arr["Characters"] = len;
+    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
+    return assoc_arr;
+}
+
 if (args.indexOf("--help") != -1) print_usage();
 
 if (args.indexOf("--only") != -1) {
@@ -569,39 +664,13 @@ if (args.indexOf("--only") != -1) {
         case "pseudo":
             results.push(generate_pseudowords());
             break;
-        case "Base94":
-        case "base94":
-        case "Base-94":
-        case "base-94":
-            results.push(generate_base94());
+        case "Random":
+        case "random":
+            results.push(generate_random());
             break;
-        case "Base64":
-        case "base64":
-        case "Base-64":
-        case "base-64":
-            results.push(generate_base64());
-            break;
-        case "Base32":
-        case "base32":
-        case "Base-32":
-        case "base-32":
-            results.push(generate_base32());
-            break;
-        case "Base16":
-        case "base16":
-        case "Base-16":
-        case "base-16":
-        case "Hexadecimal":
-        case "hexadecimal":
-            results.push(generate_base16());
-            break;
-        case "Base10":
-        case "base10":
-        case "Base-10":
-        case "base-10":
-        case "Decimal":
-        case "decimal":
-            results.push(generate_base10());
+        case "Emoji":
+        case "emoji":
+            results.push(generate_emoji());
             break;
         default:
             console.log("Unknown generator: " + args[args.indexOf("--only")+1])
@@ -613,13 +682,9 @@ else {
     results.push(generate_eff());
     results.push(generate_alternate());
     results.push(generate_pseudowords());
-    results.push(generate_base94());
-    results.push(generate_base64());
-    results.push(generate_base32());
-    results.push(generate_base16());
-    results.push(generate_base10());
+    results.push(generate_random());
+    results.push(generate_emoji());
 }
-
 
 if (args.indexOf("--json") != -1) {
     var json_ret = JSON.stringify(results, null, 2);
