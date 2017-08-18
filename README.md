@@ -5,57 +5,57 @@ such, enough changes are made to make it its own separate project.
 
 Options are:
 
-   --help
-       Print this help and exit.
+    --help
+        Print this help and exit.
 
-   --diceware <language>
-       Choose a Diceware language. Default is English.
-       <language> must be one of:
-           Basque, Beale, Bulgarian, Catalan, Chinese, Czech,
-           Danish, Dutch, English, Esperanto, Finnish, French,
-           German, Italian, Japanese, Maori, Norwegian, Polish,
-           Portuguese, Russian, Slovenian, Spanish, Swedish, Turkish.
+    --diceware <language>
+        Choose a Diceware language. Default is English.
+        <language> must be one of:
+            Basque, Beale, Bulgarian, Catalan, Chinese, Czech,
+            Danish, Dutch, English, Esperanto, Finnish, French,
+            German, Italian, Japanese, Maori, Norwegian, Polish,
+            Portuguese, Russian, Slovenian, Spanish, Swedish, Turkish.
 
-   --eff <wordlist>
-       Choose an EFF wordlist. Default is Short.
-       <wordlist> must be one of:
-           Distant, Long, Short.
+    --eff <wordlist>
+        Choose an EFF wordlist. Default is Short.
+        <wordlist> must be one of:
+            Distant, Long, Short.
 
-   --alternate <wordlist>
-       Choose an alternate wordlist. Default is PGP.
-       <wordlist> must be one of:
-           Bitcoin, Elvish, Klingon, PGP
-           RockYou, Simpsons, Trump
+    --alternate <wordlist>
+        Choose an alternate wordlist. Default is PGP.
+        <wordlist> must be one of:
+            Bitcoin, Elvish, Klingon, PGP
+            RockYou, Simpsons, Trump
 
-   --ninja
-       Choose Secret Ninja encoding.
+    --ninja
+        Choose Secret Ninja encoding.
 
-   --cosby
-       Choose Bill Cosby Bebob.
+    --cosby
+        Choose Bill Cosby Bebob.
 
-   --kpop
-       Choose Korean K-pop words.
+    --kpop
+        Choose Korean K-pop words.
 
-   --random <base>
-       Choose a number base to generated. Default is Base94
-       <base> must be one of:
-           Base94, Base64, Base32, Base16, Base10.
-   --emoji
-       Choose emoji. A supporting font is needed to view correctly.
+    --random <base>
+        Choose a number base to generated. Default is Base94
+        <base> must be one of:
+            Base94, Base64, Base32, Base16, Base10.
+    --emoji
+        Choose emoji. A supporting font is needed to view correctly.
 
-   --only <generator>
-       Choose a generator instead of printing all six (default).
-       <generator> must be one of:
-           Diceware, EFF, Alternate, Pseudowords, Random, Emoji
+    --only <generator>
+        Choose a generator instead of printing all six (default).
+        <generator> must be one of:
+            Diceware, EFF, Alternate, Pseudowords, Random, Emoji
 
-   --min-entropy <number>
-       Set a minimum entropy requirement in bits. Default is 70.
+    --min-entropy <number>
+        Set a minimum entropy requirement in bits. Default is 70.
 
-   --json
-       Output the passwords and meta in JSON format.
+    --json
+        Output the passwords and meta in JSON format.
 
-   --hyphenate
-       Add hyphens to the Diceware, EFF, and Alternate passphrases.
+    --hyphenate
+        Add hyphens to the Diceware, EFF, and Alternate passphrases.
 
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
