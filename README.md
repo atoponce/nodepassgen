@@ -63,66 +63,45 @@ is unformatted plaintext:
     $ nodejs nodepassgen --json
     [
       {
-	    "Generator": "Diceware",
-	    "Wordlist": "English",
-	    "Password": "tail thyme legion pansy vita corps",
-	    "Characters": 29,
-	    "Entropy": 77
+        "Generator": "Diceware",
+        "Wordlist": "English",
+        "Password": "squid renown break goggle purr marry",
+        "Characters": 31,
+        "Entropy": 77
       },
       {
-	    "Generator": "EFF",
-	    "Wordlist": "Short",
-	    "Password": "wheat dodge stamp boxer swarm bleak spend",
-	    "Characters": 35,
-	    "Entropy": 72
+        "Generator": "EFF",
+        "Wordlist": "Short",
+        "Password": "duct niece decal ivory tray oil jeep",
+        "Characters": 30,
+        "Entropy": 72
       },
       {
-	    "Generator": "Alternate",
-	    "Wordlist": "PGP",
-	    "Password": "adult barbecue blowtorch endorse misnomer vapor equation hydraulic",
-	    "Characters": 59,
-	    "Entropy": 72
+        "Generator": "Alternate",
+        "Wordlist": "PGP",
+        "Password": "tolerance billiard integrate uncut adviser slowdown asteroid Oakland",
+        "Characters": 61,
+        "Entropy": 72
       },
       {
-	    "Generator": "Pseudowords",
-	    "Wordlist": "Bubble Babble",
-	    "Password": "xezyx-zuzeg-bozum-bepup-xyhax",
-	    "Characters": 25,
-	    "Entropy": 78
+        "Generator": "Pseudowords",
+        "Wordlist": "Bubble Babble",
+        "Password": "xakiz-rumyr-xiceg-doxur-kibix",
+        "Characters": 25,
+        "Entropy": 78
       },
       {
-	    "Generator": "Base94",
-	    "Wordlist": null,
-	    "Password": "A#BNG(r{#A<",
-	    "Characters": 11,
-	    "Entropy": 72
+        "Generator": "Base94",
+        "Wordlist": null,
+        "Password": "@fg/;aMt~)!",
+        "Characters": 11,
+        "Entropy": 72
       },
       {
-	    "Generator": "Base64",
-	    "Wordlist": null,
-	    "Password": "Ztcoe01LyJWm",
-	    "Characters": 12,
-	    "Entropy": 72
-      },
-      {
-	    "Generator": "Base32",
-	    "Wordlist": null,
-	    "Password": "pbxqazn6yktd32",
-	    "Characters": 14,
-	    "Entropy": 70
-      },
-      {
-	    "Generator": "Base16",
-	    "Wordlist": null,
-	    "Password": "1d9d95e9063e7c0fb1",
-	    "Characters": 18,
-	    "Entropy": 72
-      },
-      {
-	    "Generator": "Base10",
-	    "Wordlist": null,
-	    "Password": "8616678856135725452404",
-	    "Characters": 22,
-	    "Entropy": 73
+        "Generator": "Emoji",
+        "Wordlist": null,
+        "Password": "❇ 💋 🎡 🆔 📫 💕 󾓬 🔚",
+        "Characters": 8,
+        "Entropy": 78
       }
     ]
