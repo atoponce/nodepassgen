@@ -1,4 +1,5 @@
 #!/usr/bin/nodejs
+const fs = require('fs');
 const crypto = require('crypto');
 
 var spaces=false;
@@ -50,6 +51,12 @@ function print_usage() {
     console.log("   --traditional");
     console.log("       Use the Traditional Chinese character set with Bitcoin.");
     console.log("");
+    console.log("   -s");
+    console.log("   --system");
+    console.log("       Use /usr/share/dict/words for building your passphrase.");
+    console.log("       Obviously, the more words in that file, the more entropy per word.");
+    console.log("       Also, larger system word lists will contain more obscure words.")
+    console.log("");
     console.log("   -n");
     console.log("   --ninja");
     console.log("       Choose Secret Ninja encoding.");
@@ -72,7 +79,8 @@ function print_usage() {
     console.log("   --only <generator>");
     console.log("       Choose a generator instead of printing all six (default).");
     console.log("       <generator> must be one of:");
-    console.log("           Diceware, EFF, Alternate, Pseudowords, Random, Emoji");
+    console.log("           Alternate, Bitcoin, Diceware, EFF System,");
+    console.log("           Pseudowords, Random, or Emoji");
     console.log("");
     console.log("   -m <number>");
     console.log("   --min-entropy <number>");
@@ -92,27 +100,32 @@ function print_usage() {
 String.prototype.rtrim = function() { return this.replace(/\s+$/g,""); }
 
 function get_entropy() {
+    var entropy;
     if (args.indexOf("--min-entropy") != -1) {
-        return args[args.indexOf("--min-entropy") +1 ];
+        entropy = args[args.indexOf("--min-entropy") + 1 ];
     }
     else if (args.indexOf("-m") != -1) {
-        return args[args.indexOf("-m") +1 ];
+        entropy = args[args.indexOf("-m") + 1 ];
     }
     else {
         return 70;
     }
+    if (entropy < 55) {
+        console.log("Entropy value too low. Must be at least 55-bits.");
+        process.exit(1);
+    }
+    else {
+        return entropy;
+    }
 }
 
-/* Uniform, unbiased, secure, random number generator */
 function sec_rand(count) {
     var min, rand;
-
     count >>>= 0;
     min = (-count >>> 0) % count;
     do {
         rand = parseInt(crypto.randomBytes(4).toString('hex'), 16);
     } while (rand < min);
-
     return rand % count;
 }
 
@@ -144,7 +157,6 @@ function generate_diceware() {
     else {
         var lang = "English";
     }
-
     var wordlist = [];
     switch(lang) {
         case "Basque":
@@ -271,7 +283,6 @@ function generate_diceware() {
             console.log("Unknown language: " + lang);
             process.exit(1);
     }
-
     var assoc_arr = {};
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
@@ -296,7 +307,6 @@ function generate_eff() {
     else {
         var eff_set = "Short";
     }
-
     var wordlist = [];
     switch(eff_set) {
         case "Distant":
@@ -317,9 +327,7 @@ function generate_eff() {
         default:
             console.log("Unknown wordlist: " + eff_set);
             process.exit();
-
     }
-
     var assoc_arr = {};
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
@@ -344,7 +352,6 @@ function generate_alternate() {
     else {
         var alt_set = "Trump";
     }
-
     var wordlist = [];
     switch(alt_set) {
         case "Elvish":
@@ -383,7 +390,6 @@ function generate_alternate() {
             console.log("Unknown wordlist: " + alt_set);
             process.exit(1);
     }
-
     var assoc_arr = {};
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
@@ -408,7 +414,6 @@ function generate_bitcoin() {
     else {
         var lang = "English";
     }
-
     var wordlist = [];
     switch(lang) {
         case "Chinese":
@@ -456,7 +461,6 @@ function generate_bitcoin() {
             console.log("Unknown language: " + lang);
             process.exit(1);
     }
-
     var assoc_arr = {};
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
@@ -465,6 +469,23 @@ function generate_bitcoin() {
     }
     assoc_arr["Generator"] = "Bitcoin";
     assoc_arr["Wordlist"] = lang;
+    assoc_arr["Password"] = pass;
+    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
+    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
+    return assoc_arr;
+}
+
+function generate_sys_pass() {
+    var dict = fs.readFileSync("/usr/share/dict/words").toString();
+    var wordlist = dict.split('\n');
+    var assoc_arr = {};
+    var len = Math.ceil(entropy/Math.log2(wordlist.length));
+    var pass = generate_pass(len, wordlist, true);
+    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
+        pass = pass.split(" ").join("-");
+    }
+    assoc_arr["Generator"] = "System";
+    assoc_arr["Wordlist"] = "/usr/share/dict/words";
     assoc_arr["Password"] = pass;
     assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
     assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
@@ -523,12 +544,9 @@ function generate_babble() {
     var c_ent = Math.log2(consonants.length);
     var out_ent = (2*c_ent)+(2*v_ent);
     var in_ent = (3*c_ent)+(2*v_ent);
-
     entropy = entropy - (2*out_ent);
-
     var len = Math.ceil(entropy/in_ent);
     var tot_ent = out_ent + (len*in_ent) + out_ent;
-
     for (var i=0; i<len+2; i++) {
         for (var j=0; j<5; j++) {
             if (j % 2 == 0) {
@@ -539,10 +557,8 @@ function generate_babble() {
             }
         }
     }
-
     pass[0] = "x";
     pass[pass.length-1] = "x";
-
     for (var i=pass.length; i>0; i-=5) {
         pass.splice(i, 0, "-");
     }
@@ -563,7 +579,6 @@ function generate_pseudowords() {
     else {
         var pw_type = "Bubble Babble";
     }
-
     if (pw_type == "Secret Ninja") {
         var ret = generate_ninja();
     }
@@ -670,7 +685,6 @@ function generate_random() {
     else {
         var rand_set = "Base94";
     }
-
     switch(rand_set) {
         case "Base94":
         case "base94":
@@ -726,7 +740,6 @@ function generate_random() {
 function generate_emoji() {
     const emoji_wordlist = require('./lists/random_emoji');
     var wordlist = emoji_wordlist.wordlist;
-
     var assoc_arr = {};
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
@@ -751,6 +764,14 @@ else if (args.indexOf("-o") != -1) {
 }
 if (generator !== undefined && generator !== null) {
     switch(generator) {
+        case "Alternate":
+        case "alternate":
+            results.push(generate_alternate());
+            break;
+        case "Bitcoin":
+        case "bitcoin":
+            results.push(generate_bitcoin());
+            break;
         case "Diceware":
         case "diceware":
             results.push(generate_diceware());
@@ -760,13 +781,9 @@ if (generator !== undefined && generator !== null) {
         case "eff":
             results.push(generate_eff());
             break;
-        case "Alternate":
-        case "alternate":
-            results.push(generate_alternate());
-            break;
-        case "Bitcoin":
-        case "bitcoin":
-            results.push(generate_bitcoin());
+        case "System":
+        case "system":
+            results.push(generate_sys_pass());
             break;
         case "Pseudowords":
         case "pseudowords":
@@ -781,15 +798,18 @@ if (generator !== undefined && generator !== null) {
             results.push(generate_random());
             break;
         default:
-            console.log("Unknown generator: " + args[args.indexOf("--only")+1])
+            console.log("Unknown generator: " + args[args.indexOf("--only") + 1])
             process.exit(1);
     }
 }
 else {
-    results.push(generate_diceware());
-    results.push(generate_eff());
     results.push(generate_alternate());
     results.push(generate_bitcoin());
+    results.push(generate_diceware());
+    results.push(generate_eff());
+    if ((args.indexOf("--system") != -1) || (args.indexOf("-s") != -1)) {
+        results.push(generate_sys_pass());
+    }
     results.push(generate_pseudowords());
     results.push(generate_random());
 }
