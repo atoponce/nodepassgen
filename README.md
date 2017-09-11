@@ -92,56 +92,57 @@ Options are:
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
 
-    $ nodejs nodepassgen
-    Diceware(English): huck be steed 11th yam vito
-    EFF(Short): agony urban trio jazz near ajar tutu
-    Alternate(PGP): orca pioneer payday music Babylon phonetic disruptive choking
-    Pseudowords(Bubble Babble): xulym-gyryz-tesem-zetax-selox
-    Base94(null): _k|~):tLDc$
-    Emoji(null): 🈵 ◼ 🔸 🕝 💥 👮 🏯 🔳
+    $ nodepassgen
+    Alternate(Trump): deplorable stuns 1988 Broaddrick 44 Russians
+    Bitcoin(English): dirt globe expire victory oak okay fragile
+    Diceware(English): spew vw night grain 89 won
+    EFF(Short): lair shush royal jam snack visor busy
+    Pseudowords(Bubble Babble): xekyp-binah-gofop-febun-kemax
+    Random(Base94): Gf&qfko
 
-    $ nodejs nodepassgen --json
+    $ nodepassgen --json
     [
+      {
+        "Generator": "Alternate",
+        "Wordlist": "Trump",
+        "Password": "#newyear thoughts nuclear fools damage steel",
+        "Characters": 39,
+        "Entropy": 74
+      },
+      {
+        "Generator": "Bitcoin",
+        "Wordlist": "English",
+        "Password": "leader naive way subway board citizen beach",
+        "Characters": 37,
+        "Entropy": 77
+      },
       {
         "Generator": "Diceware",
         "Wordlist": "English",
-        "Password": "squid renown break goggle purr marry",
-        "Characters": 31,
+        "Password": "55 parse club kudo bread reagan",
+        "Characters": 26,
         "Entropy": 77
       },
       {
         "Generator": "EFF",
         "Wordlist": "Short",
-        "Password": "duct niece decal ivory tray oil jeep",
-        "Characters": 30,
-        "Entropy": 72
-      },
-      {
-        "Generator": "Alternate",
-        "Wordlist": "PGP",
-        "Password": "tolerance billiard integrate uncut adviser slowdown asteroid Oakland",
-        "Characters": 61,
+        "Password": "omen robin mud jot savor reach ivy",
+        "Characters": 28,
         "Entropy": 72
       },
       {
         "Generator": "Pseudowords",
         "Wordlist": "Bubble Babble",
-        "Password": "xakiz-rumyr-xiceg-doxur-kibix",
+        "Password": "xakyf-difiv-xuvil-tamal-mivax",
         "Characters": 25,
         "Entropy": 78
       },
       {
-        "Generator": "Base94",
-        "Wordlist": null,
-        "Password": "@fg/;aMt~)!",
+        "Generator": "Random",
+        "Wordlist": "Base94",
+        "Password": "2_c+#]ky6B1",
         "Characters": 11,
         "Entropy": 72
-      },
-      {
-        "Generator": "Emoji",
-        "Wordlist": null,
-        "Password": "❇ 💋 🎡 🆔 📫 💕 󾓬 🔚",
-        "Characters": 8,
-        "Entropy": 78
       }
     ]
+
