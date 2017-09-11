@@ -8,56 +8,86 @@ be needed to view the emoji characters correctly.
 
 Options are:
 
-    --help
-        Print this help and exit.
+   -h
+   --help
+       Print this help and exit.
 
-    --diceware <language>
-        Choose a Diceware language. Default is English.
-        <language> must be one of:
-            Basque, Beale, Bulgarian, Catalan, Chinese, Czech,
-            Danish, Dutch, English, Esperanto, Finnish, French,
-            German, Italian, Japanese, Maori, Norwegian, Polish,
-            Portuguese, Russian, Slovenian, Spanish, Swedish, Turkish.
+   -d <language>
+   --diceware <language>
+       Choose a Diceware language. Default is English.
+       <language> must be one of:
+           Basque, Beale, Bulgarian, Catalan, Chinese, Czech,
+           Danish, Dutch, English, Esperanto, Finnish, French,
+           German, Italian, Japanese, Maori, Norwegian, Polish,
+           Portuguese, Russian, Slovenian, Spanish, Swedish, Turkish.
 
-    --eff <wordlist>
-        Choose an EFF wordlist. Default is Short.
-        <wordlist> must be one of:
-            Distant, Long, Short.
+   -e <wordlist>
+   --eff <wordlist>
+       Choose an EFF wordlist. Default is Short.
+       <wordlist> must be one of:
+           Distant, Long, Short.
 
-    --alternate <wordlist>
-        Choose an alternate wordlist. Default is PGP.
-        <wordlist> must be one of:
-            Bitcoin, Elvish, Klingon, PGP
-            RockYou, Simpsons, Trump
+   -a <wordlist>
+   --alternate <wordlist>
+       Choose an alternate wordlist. Default is Trump.
+       <wordlist> must be one of:
+           Elvish, Klingon, PGP, Rockyou, Simposons, Trump
 
-    --ninja
-        Choose Secret Ninja encoding.
+   -b <language>
+   --bitcoin <language>
+       Choose a Bitcoin language. Default is English.
+       <language> must be one of:
+           Chinese, English, French, Italian, Japanese, Korean
+       NOTE:
+           Simplified Chinese is the default Chinese character set.
+           If you want to use Traditional Chinese, use --traditional.
 
-    --cosby
-        Choose Bill Cosby Bebob.
+   -t
+   --traditional
+       Use the Traditional Chinese character set with Bitcoin.
 
-    --kpop
-        Choose Korean K-pop words.
+   -s
+   --system
+       Use /usr/share/dict/words for building your passphrase.
+       Obviously, the more words in that file, the more entropy per word.
+       Also, larger system word lists will contain more obscure words.
 
-    --random <base>
-        Choose a number base to generated. Default is Base94
-        <base> must be one of:
-            Base94, Base64, Base32, Base16, Base10.
+   -n
+   --ninja
+       Choose Secret Ninja encoding.
 
-    --only <generator>
-        Choose a generator instead of printing all six (default).
-        NOTE: A font supporting emoji may be needed for the Emoji generator.
-        <generator> must be one of:
-            Diceware, EFF, Alternate, Pseudowords, Random, Emoji
+   -c
+   --cosby
+       Choose Bill Cosby Bebob.
 
-    --min-entropy <number>
-        Set a minimum entropy requirement in bits. Default is 70.
+   -k
+   --kpop
+       Choose Korean K-pop words.
 
-    --json
-        Output the passwords and meta in JSON format.
+   -e <base>
+   --random <base>
+       Choose a number base to generated. Default is Base94
+       <base> must be one of:
+           Base94, Base64, Base32, Base16, Base10.
 
-    --hyphenate
-        Add hyphens to the Diceware, EFF, and Alternate passphrases.
+   -o <generator>
+   --only <generator>
+       Choose a generator instead of printing all six (default).
+       <generator> must be one of:
+           Alternate, Bitcoin, Diceware, EFF System,
+           Pseudowords, Random, or Emoji
+
+   -m <number>
+   --min-entropy <number>
+       Set a minimum entropy requirement in bits. Default is 70.
+
+   -j
+   --json
+       Output the passwords and meta in JSON format.
+
+   -H
+   --hyphenate
+       Add hyphens to the Diceware, EFF, and Alternate passphrases.
 
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:

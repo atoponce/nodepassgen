@@ -5,7 +5,6 @@ const crypto = require('crypto');
 var spaces=false;
 var results = [];
 var args = process.argv;
-var entropy = get_entropy();
 
 function print_usage() {
     console.log("Usage: node main.js [OPTION [ARG]]...");
@@ -284,6 +283,7 @@ function generate_diceware() {
             process.exit(1);
     }
     var assoc_arr = {};
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
     if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
@@ -329,6 +329,7 @@ function generate_eff() {
             process.exit();
     }
     var assoc_arr = {};
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
     if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
@@ -391,6 +392,7 @@ function generate_alternate() {
             process.exit(1);
     }
     var assoc_arr = {};
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
     if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
@@ -462,6 +464,7 @@ function generate_bitcoin() {
             process.exit(1);
     }
     var assoc_arr = {};
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
     if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
@@ -479,6 +482,7 @@ function generate_sys_pass() {
     var dict = fs.readFileSync("/usr/share/dict/words").toString();
     var wordlist = dict.split('\n');
     var assoc_arr = {};
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
     if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
@@ -494,6 +498,7 @@ function generate_sys_pass() {
 
 function generate_ninja() {
     var ninja = ['ka','zu','mi','te','ku','lu','ji','ri','ki','zu','me','ta','rin','to','mo','no','ke','shi','ari','chi','do','ru','mei','na','fu','zi'];
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(ninja.length));
     var pass = "";
     
@@ -509,6 +514,7 @@ function generate_ninja() {
 function generate_cosby() {
     // 32 unique words = 5 bits of entropy per word
     var cosby = ['Bada','Badum','Bee','Bloo','Bop','Caw','Derp','Dip','Doo','Dub','Hip','Ka','Loo','Meep','Mim','Moom','Na','Naw','Nerp','Nup','Pa','Papa','Spee','Squee','Squoo','Woobly','Wop','Yee','Zap','Zip','Zop','Zoop','Zow'];
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(cosby.length));
     var pass = "";
     
@@ -524,6 +530,7 @@ function generate_cosby() {
 function generate_kpop() {
     // 64 unique words = 6 bits of entropy per word
     var kpop = ['A','Ah','Bae','Bin','Bo','Choi','Chul','Da','Do','Dong','Eun','Gi','Gun','Ha','Hae','Hee','Ho','Hu','Hwa','Hwan','Hye','Hyo','Hyun','Il','In','Ja','Jae','Ji','Jin','Jong','Joo','Joon','Ju','Jun','Jung','Ki','Kun','Kyu','Lee','Mi','Min','Moon','Nam','Ok','Park','Rin','Seo','Seul','Shi','Sik','So','Song','Soo','Su','Sun','Sung','Won','Woo','Ye','Yeon','Yoo','Yu','Yul','Yun'];
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(kpop.length));
     var pass = "";
     
@@ -544,6 +551,7 @@ function generate_babble() {
     var c_ent = Math.log2(consonants.length);
     var out_ent = (2*c_ent)+(2*v_ent);
     var in_ent = (3*c_ent)+(2*v_ent);
+    var entropy = get_entropy();
     entropy = entropy - (2*out_ent);
     var len = Math.ceil(entropy/in_ent);
     var tot_ent = out_ent + (len*in_ent) + out_ent;
@@ -609,6 +617,7 @@ function generate_base94() {
     for (i=0; i<94; i++) {
         s += String.fromCharCode(33+i);
     }
+    var entropy = get_entropy();
     var len = Math.ceil(entropy/Math.log2(s.length));
     var pass = generate_pass(len, s);
     assoc_arr["Generator"] = "Random";
@@ -622,6 +631,7 @@ function generate_base94() {
 function generate_base64() {
     var assoc_arr = {};
     var s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/";
+    console.log(entropy);
     var len = Math.ceil(entropy/Math.log2(s.length));
     var pass = generate_pass(len, s);
     assoc_arr["Generator"] = "Random";
@@ -635,6 +645,7 @@ function generate_base64() {
 function generate_base32() {
     var assoc_arr = {};
     var s = "0123456789abcdefghjkmnpqrstvwxyz";
+    console.log(entropy);
     var len = Math.ceil(entropy/Math.log2(s.length));
     var pass = generate_pass(len, s);
     var result = "Base32: '" + pass + "', ";
@@ -649,6 +660,7 @@ function generate_base32() {
 function generate_base16() {
     var assoc_arr = {};
     var s = "0123456789abcdef"
+    console.log(entropy);
     var len = Math.ceil(entropy/Math.log2(s.length));
     var pass = generate_pass(len, s);
     var result = "Base16: '" + pass + "', ";
@@ -663,6 +675,7 @@ function generate_base16() {
 function generate_base10() {
     var assoc_arr = {};
     var s = "0123456789"
+    console.log(entropy);
     var len = Math.ceil(entropy/Math.log2(s.length));
     var pass = generate_pass(len, s);
     var result = "Base10: '" + pass + "', ";
@@ -741,6 +754,7 @@ function generate_emoji() {
     const emoji_wordlist = require('./lists/random_emoji');
     var wordlist = emoji_wordlist.wordlist;
     var assoc_arr = {};
+    console.log(entropy);
     var len = Math.ceil(entropy/Math.log2(wordlist.length));
     var pass = generate_pass(len, wordlist, true);
     pass = pass.replace(/ /g,"");
