@@ -12,92 +12,92 @@ Options are:
 
     NOTE: A Unicode font may be needed to view some of the passwords correctly.
 
-   -h
-   --help
-       Print this help and exit.
+    -h
+    --help
+        Print this help and exit.
 
-   -d <language>
-   --diceware <language>
-       Choose a Diceware language. Default is English.
-       <language> must be one of:
-           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch
-           English, Esperanto, Finnish, French, German, Hungarian, Italian
-           Japanese, Maori, Norwegian, Polish, Portuguese, Russian, Slovenian
-           Spanish, Swedish, Turkish.
+    -d <language>
+    --diceware <language>
+        Choose a Diceware language. Default is English.
+        <language> must be one of:
+            Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch
+            English, Esperanto, Finnish, French, German, Hungarian, Italian
+            Japanese, Maori, Norwegian, Polish, Portuguese, Russian, Slovenian
+            Spanish, Swedish, Turkish.
 
-   -e <wordlist>
-   --eff <wordlist>
-       Choose an EFF wordlist. Default is Short.
-       <wordlist> must be one of:
-           Distant, Long, Short.
+    -e <wordlist>
+    --eff <wordlist>
+        Choose an EFF wordlist. Default is Short.
+        <wordlist> must be one of:
+            Distant, Long, Short.
 
-   -a <wordlist>
-   --alternate <wordlist>
-       Choose an alternate wordlist. Default is Trump.
-       <wordlist> must be one of:
-           Colors, Elvish, Klingon, PGP, Rockyou, Simposons, Trump
+    -a <wordlist>
+    --alternate <wordlist>
+        Choose an alternate wordlist. Default is Trump.
+        <wordlist> must be one of:
+            Colors, Elvish, Klingon, PGP, Rockyou, Simposons, Trump
 
-   -b <language>
-   --bitcoin <language>
-       Choose a Bitcoin language. Default is English.
-       <language> must be one of:
-           Chinese, English, French, Italian, Japanese, Korean
-       NOTE:
-           Simplified Chinese is the default Chinese character set.
-           If you want to use Traditional Chinese, use --traditional.
+    -b <language>
+    --bitcoin <language>
+        Choose a Bitcoin language. Default is English.
+        <language> must be one of:
+            Chinese, English, French, Italian, Japanese, Korean
+        NOTE:
+            Simplified Chinese is the default Chinese character set.
+            If you want to use Traditional Chinese, use --traditional.
 
-   -t
-   --traditional
-       Use the Traditional Chinese character set with Bitcoin.
+    -t
+    --traditional
+        Use the Traditional Chinese character set with Bitcoin.
 
-   -s
-   --system
-       Use /usr/share/dict/words for building your passphrase.
-       Obviously, the more words in that file, the more entropy per word.
-       NOTE: larger system word lists will contain more obscure words.
+    -s
+    --system
+        Use /usr/share/dict/words for building your passphrase.
+        Obviously, the more words in that file, the more entropy per word.
+        NOTE: larger system word lists will contain more obscure words.
 
-   -n
-   --ninja
-       Choose Secret Ninja encoding.
+    -n
+    --ninja
+        Choose Secret Ninja encoding.
 
-   -c
-   --cosby
-       Choose Bill Cosby Bebob.
+    -c
+    --cosby
+        Choose Bill Cosby Bebob.
 
-   -k
-   --kpop
-       Choose Korean K-pop words.
+    -k
+    --kpop
+        Choose Korean K-pop words.
 
-   -r <set>
-   --random <set>
-       Choose from a string set. Default is Base94
-       <set> must be one of:
-           Base94, Base85, Base64, Base62, Base58, Base52, Base36, Base32
-           Base26, Base16, Base10, Base8, Base2, Coins, DNA, Emoji
-       NOTE: If you want URL-safe Base64, use -u/--urlsafe.
+    -r <set>
+    --random <set>
+        Choose from a string set. Default is Base94
+        <set> must be one of:
+            Base94, Base85, Base64, Base62, Base58, Base52, Base36, Base32
+            Base26, Base16, Base10, Base8, Base2, Coins, DNA, Emoji
+        NOTE: If you want URL-safe Base64, use -u/--urlsafe.
 
-   -u
-   --url-safe
-       Use URL-safe characters for Base64. Ignored with any other option.
+    -u
+    --url-safe
+        Use URL-safe characters for Base64. Ignored with any other option.
 
-   -o <generator>
-   --only <generator>
-       Choose a generator instead of printing all six (default).
-       <generator> must be one of:
-           Alternate, Bitcoin, Diceware, EFF, Pseudowords
-           Random, System
+    -o <generator>
+    --only <generator>
+        Choose a generator instead of printing all six (default).
+        <generator> must be one of:
+            Alternate, Bitcoin, Diceware, EFF, Pseudowords
+            Random, System
 
-   -m <number>
-   --min-entropy <number>
-       Set a minimum entropy requirement in bits. Default is 70.
+    -m <number>
+    --min-entropy <number>
+        Set a minimum entropy requirement in bits. Default is 70.
 
-   -j
-   --json
-       Output the passwords and meta in JSON format.
+    -j
+    --json
+        Output the passwords and meta in JSON format.
 
-   -H
-   --hyphenate
-       Add hyphens to the Diceware, EFF, and Alternate passphrases.
+    -H
+    --hyphenate
+        Add hyphens to the Diceware, EFF, and Alternate passphrases.
     
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
