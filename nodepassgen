@@ -635,7 +635,7 @@ function generate_set(b, rand_set) {
     switch(b) {
         case 94:
             for (i=0; i<94; i++) { s += String.fromCharCode(33+i); }
-            ident = "Base85";
+            ident = "Base94";
             break;
         case 85:
             s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&()*+-;<=>?@^_`{|}~";

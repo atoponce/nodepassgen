@@ -8,33 +8,37 @@ be needed to view the emoji characters correctly.
 
 Options are:
 
-    -h
-    --help
+    Usage: node main.js [OPTION [ARG]]...
+
+    NOTE: A Unicode font may be needed to view some of the passwords correctly.
+
+   -h
+   --help
        Print this help and exit.
 
-    -d <language>
-    --diceware <language>
+   -d <language>
+   --diceware <language>
        Choose a Diceware language. Default is English.
        <language> must be one of:
-           Basque, Beale, Bulgarian, Catalan, Chinese, Czech,
-           Danish, Dutch, English, Esperanto, Finnish, French,
-           German, Italian, Japanese, Maori, Norwegian, Polish,
-           Portuguese, Russian, Slovenian, Spanish, Swedish, Turkish.
+           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch
+           English, Esperanto, Finnish, French, German, Hungarian, Italian
+           Japanese, Maori, Norwegian, Polish, Portuguese, Russian, Slovenian
+           Spanish, Swedish, Turkish.
 
-    -e <wordlist>
-    --eff <wordlist>
+   -e <wordlist>
+   --eff <wordlist>
        Choose an EFF wordlist. Default is Short.
        <wordlist> must be one of:
            Distant, Long, Short.
 
-    -a <wordlist>
-    --alternate <wordlist>
+   -a <wordlist>
+   --alternate <wordlist>
        Choose an alternate wordlist. Default is Trump.
        <wordlist> must be one of:
-           Elvish, Klingon, PGP, Rockyou, Simposons, Trump
+           Colors, Elvish, Klingon, PGP, Rockyou, Simposons, Trump
 
-    -b <language>
-    --bitcoin <language>
+   -b <language>
+   --bitcoin <language>
        Choose a Bitcoin language. Default is English.
        <language> must be one of:
            Chinese, English, French, Italian, Japanese, Korean
@@ -42,51 +46,57 @@ Options are:
            Simplified Chinese is the default Chinese character set.
            If you want to use Traditional Chinese, use --traditional.
 
-    -t
-    --traditional
+   -t
+   --traditional
        Use the Traditional Chinese character set with Bitcoin.
 
-    -s
-    --system
+   -s
+   --system
        Use /usr/share/dict/words for building your passphrase.
        Obviously, the more words in that file, the more entropy per word.
-       Also, larger system word lists will contain more obscure words.
+       NOTE: larger system word lists will contain more obscure words.
 
-    -n
-    --ninja
+   -n
+   --ninja
        Choose Secret Ninja encoding.
 
-    -c
-    --cosby
+   -c
+   --cosby
        Choose Bill Cosby Bebob.
 
-    -k
-    --kpop
+   -k
+   --kpop
        Choose Korean K-pop words.
 
-    -e <base>
-    --random <base>
-       Choose a number base to generated. Default is Base94
-       <base> must be one of:
-           Base94, Base64, Base32, Base16, Base10.
+   -r <set>
+   --random <set>
+       Choose from a string set. Default is Base94
+       <set> must be one of:
+           Base94, Base85, Base64, Base62, Base58, Base52, Base36, Base32
+           Base26, Base16, Base10, Base8, Base2, Coins, DNA, Emoji
+       NOTE: If you want URL-safe Base64, use -u/--urlsafe.
 
-    -o <generator>
-    --only <generator>
+   -u
+   --url-safe
+       Use URL-safe characters for Base64. Ignored with any other option.
+
+   -o <generator>
+   --only <generator>
        Choose a generator instead of printing all six (default).
        <generator> must be one of:
-           Alternate, Bitcoin, Diceware, EFF System,
-           Pseudowords, Random, or Emoji
+           Alternate, Bitcoin, Diceware, EFF, Pseudowords
+           Random, System
 
-    -m <number>
-    --min-entropy <number>
+   -m <number>
+   --min-entropy <number>
        Set a minimum entropy requirement in bits. Default is 70.
 
-    -j
-    --json
+   -j
+   --json
        Output the passwords and meta in JSON format.
 
-    -H
-    --hyphenate
+   -H
+   --hyphenate
        Add hyphens to the Diceware, EFF, and Alternate passphrases.
     
 Output can be valid JSON, meant to be both human and machine parseable. Default
@@ -145,4 +155,3 @@ is unformatted plaintext:
         "Entropy": 72
       }
     ]
-
