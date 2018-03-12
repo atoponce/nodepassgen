@@ -19,10 +19,10 @@ function print_usage() {
     console.log("   --diceware <language>");
     console.log("       Choose a Diceware language. Default is English.");
     console.log("       <language> must be one of:");
-    console.log("           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch");
-    console.log("           English, Esperanto, Finnish, French, German, Hungarian, Italian");
-    console.log("           Japanese, Maori, Norwegian, Polish, Portuguese, Russian, Slovenian");
-    console.log("           Spanish, Swedish, Turkish.");
+    console.log("           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch,");
+    console.log("           Dutch-Alt, English, Esperanto, Finnish, French, German, Hungarian,");
+    console.log("           Italian, Japanese, Maori, Norwegian, Polish, Portuguese, Russian,");
+    console.log("           Slovenian, Spanish, Swedish, Turkish.");
     console.log("");
     console.log("   -e <wordlist>");
     console.log("   --eff <wordlist>");
@@ -202,6 +202,11 @@ function generate_diceware() {
         case "dutch":
             const diceware_dutch = require('./lists/diceware_dutch');
             wordlist = diceware_dutch.wordlist;
+            break;
+        case "Dutch-Alt":
+        case "dutch-alt":
+            const diceware_dutch_alt = require('./lists/diceware_dutch_alt');
+            wordlist = diceware_dutch_alt.wordlist;
             break;
         case "English":
         case "english":
