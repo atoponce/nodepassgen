@@ -576,18 +576,18 @@ function generate_babble() {
 
 function generate_pseudowords() {
     if ((args.indexOf("--ninja") != -1) || (args.indexOf("-n")) != -1) {
-        var pw_type = "Secret Ninja"
+        var pw_type = "Secret_Ninja"
     }
     else if ((args.indexOf("--kpop") != -1) || (args.indexOf("-k")) != -1) {
-        var pw_type = "Korean K-pop"
+        var pw_type = "Korean_K-pop"
     }
     else {
-        var pw_type = "Bubble Babble";
+        var pw_type = "Bubble_Babble";
     }
-    if (pw_type == "Secret Ninja") {
+    if (pw_type == "Secret_Ninja") {
         var ret = generate_ninja();
     }
-    else if (pw_type == "Korean K-pop") {
+    else if (pw_type == "Korean_K-pop") {
         var ret = generate_kpop();
     }
     else {
