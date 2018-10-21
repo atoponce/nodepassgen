@@ -34,7 +34,7 @@ function print_usage() {
     console.log("   --alternate <wordlist>");
     console.log("       Choose an alternate wordlist. Default is Trump.");
     console.log("       <wordlist> must be one of:");
-    console.log("           Colors, Elvish, Klingon, PGP, Rockyou, Simposons, Trump");
+    console.log("           Colors, Elvish, Klingon, PGP, Rockyou, Simpsons, Trump");
     console.log("");
     console.log("   -b <language>");
     console.log("   --bitcoin <language>");
