@@ -22,7 +22,7 @@ function print_usage() {
     console.log("           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch,");
     console.log("           Dutch-Alt, English, Esperanto, Finnish, French, German, Hungarian,");
     console.log("           Italian, Japanese, Maori, Norwegian, Polish, Portuguese, Russian,");
-    console.log("           Slovenian, Spanish, Swedish, Turkish.");
+    console.log("           Slovak, Slovenian, Spanish, Swedish, Turkish.");
     console.log("");
     console.log("   -e <wordlist>");
     console.log("   --eff <wordlist>");
@@ -268,6 +268,11 @@ function generate_diceware() {
         case "russian":
             const diceware_russian = require('./lists/diceware_russian');
             wordlist = diceware_russian.wordlist;
+            break;
+        case "Slovak":
+        case "slovak":
+            const diceware_slovak = require('./lists/diceware_slovak');
+            wordlist = diceware_slovak.wordlist;
             break;
         case "Slovenian":
         case "slovenian":
