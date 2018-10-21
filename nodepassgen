@@ -200,6 +200,8 @@ function generate_diceware() {
             wordlist = diceware_dutch.wordlist;
             break;
         case "Dutch-Alt":
+        case "Dutch-alt":
+        case "dutch-Alt":
         case "dutch-alt":
             const diceware_dutch_alt = require('./lists/diceware_dutch_alt');
             wordlist = diceware_dutch_alt.wordlist;
