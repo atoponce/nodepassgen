@@ -30,6 +30,7 @@
 ./nodepassgen -o diceware -d Czech
 ./nodepassgen -o diceware -d Danish
 ./nodepassgen -o diceware -d Dutch
+./nodepassgen -o diceware -d Dutch-alt
 ./nodepassgen -o diceware -d English
 ./nodepassgen -o diceware -d Esperanto
 ./nodepassgen -o diceware -d Finnish
@@ -44,6 +45,7 @@
 ./nodepassgen -o diceware -d Portuguese
 ./nodepassgen -o diceware -d Russian
 ./nodepassgen -o diceware -d Slovenian
+./nodepassgen -o diceware -d Slovak
 ./nodepassgen -o diceware -d Spanish
 ./nodepassgen -o diceware -d Swedish
 ./nodepassgen -o diceware -d Turkish
@@ -57,17 +59,16 @@
 
 # Pseudowords tests
 ./nodepassgen -o pseudowords # bubble babble by default - also, no option. fix?
-./nodepassgen -o pseudowords -c
 ./nodepassgen -o pseudowords -k
 ./nodepassgen -o pseudowords -n
 
 # Random tests
 ./nodepassgen -o system -s
 ./nodepassgen -o system -s -H
-./nodepassgen -o random -r base94
 ./nodepassgen -o random -r Base94
 ./nodepassgen -o random -r Base85
 ./nodepassgen -o random -r Base64
+./nodepassgen -o random -r Base64 -u
 ./nodepassgen -o random -r Base62
 ./nodepassgen -o random -r Base58
 ./nodepassgen -o random -r Base52
