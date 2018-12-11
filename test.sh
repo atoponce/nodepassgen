@@ -39,6 +39,7 @@
 ./nodepassgen -o diceware -d Hungarian
 ./nodepassgen -o diceware -d Italian
 ./nodepassgen -o diceware -d Japanese
+./nodepassgen -o diceware -d Latin
 ./nodepassgen -o diceware -d Maori
 ./nodepassgen -o diceware -d Norwegian
 ./nodepassgen -o diceware -d Polish

@@ -21,8 +21,8 @@ function print_usage() {
     console.log("       <language> must be one of:");
     console.log("           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch,");
     console.log("           Dutch-Alt, English, Esperanto, Finnish, French, German, Hungarian,");
-    console.log("           Italian, Japanese, Maori, Norwegian, Polish, Portuguese, Russian,");
-    console.log("           Slovak, Slovenian, Spanish, Swedish, Turkish.");
+    console.log("           Italian, Japanese, Latin, Maori, Norwegian, Polish, Portuguese,");
+    console.log("           Russian, Slovak, Slovenian, Spanish, Swedish, Turkish.");
     console.log("");
     console.log("   -e <wordlist>");
     console.log("   --eff <wordlist>");
@@ -245,6 +245,11 @@ function generate_diceware() {
         case "japanese":
             const diceware_japanese = require('./lists/diceware_japanese');
             wordlist = diceware_japanese.wordlist;
+            break;
+        case "Latin":
+        case "latin":
+            const diceware_latin = require('./lists/diceware_latin');
+            wordlist = diceware_latin.wordlist;
             break;
         case "Maori":
         case "maori":
