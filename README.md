@@ -21,9 +21,9 @@ Options are:
 	   Choose a Diceware language. Default is English.
 	   <language> must be one of:
 	       Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch,
-	       Dutch-Alt, English, Esperanto, Finnish, French, German, Hungarian,
-	       Italian, Japanese, Latin, Maori, Norwegian, Polish, Portuguese,
-	       Russian, Slovak, Slovenian, Spanish, Swedish, Turkish.
+	       Dutch-Alt, English, Esperanto, Estonian, Finnish, French, German,
+	       Hungarian, Italian, Japanese, Latin, Maori, Norwegian, Polish,
+	       Portuguese, Russian, Slovak, Slovenian, Spanish, Swedish, Turkish.
 
        -e <wordlist>
        --eff <wordlist>
