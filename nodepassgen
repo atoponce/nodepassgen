@@ -67,8 +67,8 @@ function print_usage() {
     console.log("   --random <set>");
     console.log("       Choose from a string set. Default is Base94");
     console.log("       <set> must be one of:");
-    console.log("           Base94, Base85, Base64, Base62, Base58, Base52, Base36, Base32");
-    console.log("           Base26, Base16, Base10, Base8, Base2, Coins, DNA, Emoji");
+    console.log("           Base188, Base94, Base85, Base64, Base62, Base58, Base52, Base36");
+    console.log("           Base32, Base26, Base16, Base10, Base8, Base2, Coins, DNA, Emoji");
     console.log("       NOTE: If you want URL-safe Base64, use -u/--urlsafe.");
     console.log("");
     console.log("   -u");
@@ -629,6 +629,12 @@ function generate_set(b, rand_set) {
     var ident = '';
     var s = '';
     switch(b) {
+        case 188:
+            for (i=0; i<94; i++) s += String.fromCharCode(33+i);
+            for (i=0; i<95; i++) s += String.fromCharCode(161+i);
+            s = s.replace(String.fromCharCode(173),''); // soft-hyphen isn't graphical
+            ident = "Base188";
+            break;
         case 94:
             for (i=0; i<94; i++) { s += String.fromCharCode(33+i); }
             ident = "Base94";
@@ -721,6 +727,11 @@ function generate_random() {
         var rand_set = "Base94";
     }
     switch(rand_set) {
+        case "Base188":
+        case "base188":
+        case "188":
+            s = generate_set(188);
+            break;
         case "Base94":
         case "base94":
         case "94":
