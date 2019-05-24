@@ -55,9 +55,9 @@ function print_usage() {
     console.log("       Obviously, the more words in that file, the more entropy per word.");
     console.log("       NOTE: larger system word lists will contain more obscure words.")
     console.log("");
-    console.log("   -A");
-    console.log("   --aaple");
-    console.log("       Choose Apple macOS / iOS compatible passwords.");
+    console.log("   -B");
+    console.log("   --bubble");
+    console.log("       Choose Bubble Babble encoding.");
     console.log("");
     console.log("   -n");
     console.log("   --ninja");
@@ -662,8 +662,8 @@ function generate_babble() {
 }
 
 function generate_pseudowords() {
-    if ((args.indexOf("--apple") != -1) || (args.indexOf("-A")) != -1) {
-        var pw_type = "Apple_Inc";
+    if ((args.indexOf("--bubble") != -1) || (args.indexOf("-B")) != -1) {
+        var pw_type = "Bubble_Babble";
     }
     else if ((args.indexOf("--ninja") != -1) || (args.indexOf("-n")) != -1) {
         var pw_type = "Secret_Ninja";
@@ -672,7 +672,7 @@ function generate_pseudowords() {
         var pw_type = "Korean_K-pop";
     }
     else {
-        var pw_type = "Bubble_Babble";
+        var pw_type = "Apple_Inc";
     }
     if (pw_type == "Apple_Inc") {
         var ret = generate_apple();
