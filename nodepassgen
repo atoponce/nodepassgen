@@ -28,7 +28,7 @@ function print_usage() {
     console.log("   --eff <wordlist>");
     console.log("       Choose an EFF wordlist. Default is Short.");
     console.log("       <wordlist> must be one of:");
-    console.log("           Distant, Long, Short.");
+    console.log("           Distant, Long, Potter, Short, Trek, Wars.");
     console.log("");
     console.log("   -a <wordlist>");
     console.log("   --alternate <wordlist>");
@@ -356,10 +356,30 @@ function generate_eff() {
             const eff_long = require('./lists/eff_long');
             wordlist = eff_long.eff_long;
             break;
+        case "Potter":
+        case "potter":
+            const eff_harrypotter = require('./lists/eff_harrypotter');
+            wordlist = eff_harrypotter.eff_harrypotter;
+            break;
         case "Short":
         case "short":
             const eff_short = require('./lists/eff_short');
             wordlist = eff_short.eff_short;
+            break;
+        case "Thrones":
+        case "thrones":
+            const eff_gameofthrones = require('./lists/eff_gameofthrones');
+            wordlist = eff_gameofthrones.eff_gameofthrones;
+            break;
+        case "Trek":
+        case "trek":
+            const eff_startrek = require('./lists/eff_startrek');
+            wordlist = eff_startrek.eff_startrek;
+            break;
+        case "Wars":
+        case "wars":
+            const eff_starwars = require('./lists/eff_starwars');
+            wordlist = eff_starwars.eff_starwars;
             break;
         default:
             console.log("Unknown wordlist: " + eff_set);
