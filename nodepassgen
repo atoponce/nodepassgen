@@ -809,7 +809,7 @@ function generate_set(b, rand_set) {
         case 2:
             if ((rand_set == "Coins") || (rand_set == "coins")) {
                 s = "HT";
-                ident = "Coin flips";
+                ident = "Coin_flips";
             }
             else {
                 s = "01";
