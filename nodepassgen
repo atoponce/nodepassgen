@@ -57,6 +57,14 @@ function print_usage() {
     console.log("       Obviously, the more words in that file, the more entropy per word.");
     console.log("       NOTE: larger system word lists will contain more obscure words.")
     console.log("");
+    console.log("   -D");
+    console.log("   --dicekey");
+    console.log("       Generate a hard-coded 198-bit entropy text-based DiceKeys key.");
+    console.log("       Format of the key is: <character><side><orientation> where:");
+    console.log("             <character>: Shuffled A-Z without Q ");
+    console.log("                  <side>: Random side 1-6 of the die");
+    console.log("           <orientation>: Random N,E,S,W cardinal direction");
+    console.log("");
     console.log("   -B");
     console.log("   --bubble");
     console.log("       Choose Bubble Babble encoding.");
@@ -562,6 +570,34 @@ function generate_bitcoin() {
     return assoc_arr;
 }
 
+function generate_dicekey() {
+    var chars = "ABCDEFGHIJKLMNOPRSTUVWXYZ".split("");
+    var pass = "";
+    var assoc_arr = {};
+    for (let i=0; i<chars.length; i++) {
+        let randInt = sec_rand(chars.length);
+        let tmp = chars[randInt];
+        chars[randInt] = chars[i];
+        chars[i] = tmp;
+    }
+    for (let i=0; i<chars.length; i++) {
+        let dir = "NESW".split("");
+        pass += chars[i];
+        pass += sec_rand(6) + 1;
+        pass += dir[sec_rand(4)];
+        pass += " ";
+    }
+    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
+        pass = pass.rtrim().split(" ").join("-");
+    }
+    assoc_arr["Generator"] = "DiceKey";
+    assoc_arr["Wordlist"] = "N/A";
+    assoc_arr["Password"] = pass.rtrim();
+    assoc_arr["Characters"] = pass.rtrim().replace(/\s/g, '').length;
+    assoc_arr["Entropy"] = 198; // hard-coded
+    return assoc_arr;
+}
+
 function generate_sys_pass() {
     var dict = fs.readFileSync("/usr/share/dict/words").toString();
     var wordlist = dict.split('\n');
@@ -999,6 +1035,10 @@ if (generator !== undefined && generator !== null) {
         case "eff":
             results.push(generate_eff());
             break;
+        case "DiceKey":
+        case "dicekey":
+            results.push(generate_dicekey());
+            break;
         case "System":
         case "system":
             results.push(generate_sys_pass());
@@ -1030,6 +1070,9 @@ else {
     }
     results.push(generate_pseudowords());
     results.push(generate_random());
+    if ((args.indexOf("--dicekey") != -1) || (args.indexOf("-D") != -1)) {
+        results.push(generate_dicekey());
+    }
 }
 
 if ((args.indexOf("--json") != -1) || (args.indexOf("-j")) != -1) {
