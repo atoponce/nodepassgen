@@ -35,7 +35,8 @@ function print_usage() {
     console.log("   --alternate <wordlist>");
     console.log("       Choose an alternate wordlist. Default is Trump.");
     console.log("       <wordlist> must be one of:");
-    console.log("           Colors, Elvish, Klingon, PGP, Rockyou, Simpsons, Trump");
+    console.log("           Deseret, Colors, Elvish, Klingon, PGP, Rockyou, Shavian,");
+    console.log("           Simpsons, Trump");
     console.log("");
     console.log("   -b <language>");
     console.log("   --bitcoin <language>");
@@ -418,6 +419,11 @@ function generate_alternate() {
     }
     var wordlist = [];
     switch(alt_set) {
+        case "Deseret":
+        case "deseret":
+            const deseret_wordlist = require('./lists/alternate_deseret');
+            wordlist = deseret_wordlist.wordlist;
+            break;
         case "Colors":
         case "colors":
             const colors_wordlist = require('./lists/alternate_colors');
@@ -444,6 +450,11 @@ function generate_alternate() {
         case "rockyou":
             const rockyou_wordlist = require('./lists/alternate_rockyou');
             wordlist = rockyou_wordlist.wordlist;
+            break;
+        case "Shavian":
+        case "shavian":
+            const shavian_wordlist = require('./lists/alternate_shavian');
+            wordlist = shavian_wordlist.wordlist;
             break;
         case "Simpsons":
         case "simpsons":
