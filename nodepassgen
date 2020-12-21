@@ -42,7 +42,7 @@ function print_usage() {
     console.log("   --bitcoin <language>");
     console.log("       Choose a Bitcoin language. Default is English.");
     console.log("       <language> must be one of:");
-    console.log("           Chinese, Czech, English, French, Italian, Japanese, Korean");
+    console.log("           Chinese, Czech, English, French, Italian, Japanese, Korean, Portuguese");
     console.log("       NOTE:");
     console.log("           Simplified Chinese is the default Chinese character set.");
     console.log("           If you want to use Traditional Chinese, use --traditional.");
@@ -545,6 +545,11 @@ function generate_bitcoin() {
         case "korean":
             const korean_wordlist = require('./lists/bitcoin_kr');
             wordlist = korean_wordlist.wordlist;
+            break;
+        case "Portuguese":
+        case "portuguese":
+            const portuguese_wordlist = require('./lists/bitcoin_pt');
+            wordlist = portuguese_wordlist.wordlist;
             break;
         case "Spanish":
         case "spanish":
