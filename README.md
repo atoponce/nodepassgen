@@ -10,7 +10,6 @@ Options are:
 
     Usage: node main.js [OPTION [ARG]]...
     NOTE: A Unicode font may be needed to view some of the passwords correctly.
-
       -h, --help                 Print this help and exit.
       -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.
                                    WORDLIST must be one of:
@@ -42,6 +41,7 @@ Options are:
       -e, --eff WORDLIST         Choose an EFF wordlist. Default is Short.
                                    WORDLIST must be one of:
                                      Distant, Long, Potter, Short, Trek, Wars.
+      -H, --hyphenate            Hyphenate Diceware, EFF, & Alternate passphrases.
       -j, --json                 Output the passwords and meta in JSON format.
       -k, --kpop                 Choose Korean K-pop words.
       -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.
@@ -61,7 +61,6 @@ Options are:
       -s, --system               Use /usr/share/dict/words for the passphrase.
                                    NOTE: larger word lists have more obscure words.
       -t, --traditional          Use Traditional Chinese with Bitcoin.
-      -H, --hyphenate            Hyphenate Diceware, EFF, & Alternate passphrases.
 
     
 Output can be valid JSON, meant to be both human and machine parseable. Default

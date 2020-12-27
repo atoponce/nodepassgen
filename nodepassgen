@@ -9,7 +9,6 @@ const args = process.argv
 function printUsage () {
   console.log('Usage: node main.js [OPTION [ARG]]...')
   console.log('NOTE: A Unicode font may be needed to view some of the passwords correctly.')
-  console.log('')
   console.log('  -h, --help                 Print this help and exit.')
   console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
   console.log('                               WORDLIST must be one of:')
@@ -41,6 +40,7 @@ function printUsage () {
   console.log('  -e, --eff WORDLIST         Choose an EFF wordlist. Default is Short.')
   console.log('                               WORDLIST must be one of:')
   console.log('                                 Distant, Long, Potter, Short, Trek, Wars.')
+  console.log('  -H, --hyphenate            Hyphenate Diceware, EFF, & Alternate passphrases.')
   console.log('  -j, --json                 Output the passwords and meta in JSON format.')
   console.log('  -k, --kpop                 Choose Korean K-pop words.')
   console.log('  -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.')
@@ -60,7 +60,6 @@ function printUsage () {
   console.log('  -s, --system               Use /usr/share/dict/words for the passphrase.')
   console.log('                               NOTE: larger word lists have more obscure words.')
   console.log('  -t, --traditional          Use Traditional Chinese with Bitcoin.')
-  console.log('  -H, --hyphenate            Hyphenate Diceware, EFF, & Alternate passphrases.')
   process.exit()
 }
 
