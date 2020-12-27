@@ -19,6 +19,7 @@
 ./nodepassgen -o bitcoin -b japanese
 ./nodepassgen -o bitcoin -b korean
 ./nodepassgen -o bitcoin -b spanish
+./nodepassgen -o bitcoin -b portuguese
 ./nodepassgen -o bitcoin -b english -H
 
 # Diceware tests
@@ -30,12 +31,13 @@
 ./nodepassgen -o diceware -d Czech
 ./nodepassgen -o diceware -d Danish
 ./nodepassgen -o diceware -d Dutch
-./nodepassgen -o diceware -d Dutch-alt
 ./nodepassgen -o diceware -d English
 ./nodepassgen -o diceware -d Esperanto
+./nodepassgen -o diceware -d Estonian
 ./nodepassgen -o diceware -d Finnish
 ./nodepassgen -o diceware -d French
 ./nodepassgen -o diceware -d German
+./nodepassgen -o diceware -d Hebrew
 ./nodepassgen -o diceware -d Hungarian
 ./nodepassgen -o diceware -d Italian
 ./nodepassgen -o diceware -d Japanese
@@ -44,6 +46,7 @@
 ./nodepassgen -o diceware -d Norwegian
 ./nodepassgen -o diceware -d Polish
 ./nodepassgen -o diceware -d Portuguese
+./nodepassgen -o diceware -d Romanian
 ./nodepassgen -o diceware -d Russian
 ./nodepassgen -o diceware -d Slovenian
 ./nodepassgen -o diceware -d Slovak
@@ -56,6 +59,10 @@
 ./nodepassgen -o eff -e distant
 ./nodepassgen -o eff -e long
 ./nodepassgen -o eff -e short
+./nodepassgen -o eff -e potter
+./nodepassgen -o eff -e thrones
+./nodepassgen -o eff -e trek
+./nodepassgen -o eff -e wars
 ./nodepassgen -o eff -e short -H
 
 # Pseudowords tests
@@ -66,10 +73,12 @@
 # Random tests
 ./nodepassgen -o system -s
 ./nodepassgen -o system -s -H
+./nodepassgen -o random -r Base256
+./nodepassgen -o random -r Base256 -R
+./nodepassgen -o random -r Base188
 ./nodepassgen -o random -r Base94
 ./nodepassgen -o random -r Base85
 ./nodepassgen -o random -r Base64
-./nodepassgen -o random -r Base64 -u
 ./nodepassgen -o random -r Base62
 ./nodepassgen -o random -r Base58
 ./nodepassgen -o random -r Base52

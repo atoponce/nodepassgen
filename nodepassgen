@@ -1,629 +1,679 @@
 #!/usr/bin/nodejs
-const fs = require('fs');
-const crypto = require('crypto');
 
-var spaces=false;
-var results = [];
-var args = process.argv;
+let generator
+const fs = require('fs')
+const crypto = require('crypto')
+const results = []
+const args = process.argv
 
-function print_usage() {
-    console.log("Usage: node main.js [OPTION [ARG]]...");
-    console.log("");
-    console.log("NOTE: A Unicode font may be needed to view some of the passwords correctly.");
-    console.log("");
-    console.log("   -h");
-    console.log("   --help");
-    console.log("       Print this help and exit.");
-    console.log("");
-    console.log("   -d <language>");
-    console.log("   --diceware <language>");
-    console.log("       Choose a Diceware language. Default is English.");
-    console.log("       <language> must be one of:");
-    console.log("           Basque, Beale, Bulgarian, Catalan, Chinese, Czech, Danish, Dutch,");
-    console.log("           Dutch-Alt, English, Esperanto, Estonian, Finnish, French, German,");
-    console.log("           Hewbrew, Hungarian, Italian, Japanese, Latin, Maori, Norwegian,");
-    console.log("           Polish, Portuguese, Russian, Slovak, Slovenian, Spanish, Swedish,");
-    console.log("           Turkish.");
-    console.log("");
-    console.log("   -e <wordlist>");
-    console.log("   --eff <wordlist>");
-    console.log("       Choose an EFF wordlist. Default is Short.");
-    console.log("       <wordlist> must be one of:");
-    console.log("           Distant, Long, Potter, Short, Trek, Wars.");
-    console.log("");
-    console.log("   -a <wordlist>");
-    console.log("   --alternate <wordlist>");
-    console.log("       Choose an alternate wordlist. Default is Trump.");
-    console.log("       <wordlist> must be one of:");
-    console.log("           Deseret, Colors, Elvish, Klingon, PGP, Rockyou, Shavian,");
-    console.log("           Simpsons, Trump");
-    console.log("");
-    console.log("   -b <language>");
-    console.log("   --bitcoin <language>");
-    console.log("       Choose a Bitcoin language. Default is English.");
-    console.log("       <language> must be one of:");
-    console.log("           Chinese, Czech, English, French, Italian, Japanese, Korean, Portuguese");
-    console.log("       NOTE:");
-    console.log("           Simplified Chinese is the default Chinese character set.");
-    console.log("           If you want to use Traditional Chinese, use --traditional.");
-    console.log("");
-    console.log("   -t");
-    console.log("   --traditional");
-    console.log("       Use the Traditional Chinese character set with Bitcoin.");
-    console.log("");
-    console.log("   -s");
-    console.log("   --system");
-    console.log("       Use /usr/share/dict/words for building your passphrase.");
-    console.log("       Obviously, the more words in that file, the more entropy per word.");
-    console.log("       NOTE: larger system word lists will contain more obscure words.")
-    console.log("");
-    console.log("   -D");
-    console.log("   --dicekey");
-    console.log("       Generate a hard-coded 198-bit entropy text-based DiceKeys key.");
-    console.log("       Format of the key is: <character><side><orientation> where:");
-    console.log("             <character>: Shuffled A-Z without Q ");
-    console.log("                  <side>: Random side 1-6 of the die");
-    console.log("           <orientation>: Random N,E,S,W cardinal direction");
-    console.log("");
-    console.log("   -B");
-    console.log("   --bubble");
-    console.log("       Choose Bubble Babble encoding.");
-    console.log("");
-    console.log("   -n");
-    console.log("   --ninja");
-    console.log("       Choose Secret Ninja encoding.");
-    console.log("");
-    console.log("   -k");
-    console.log("   --kpop");
-    console.log("       Choose Korean K-pop words.");
-    console.log("");
-    console.log("   -r <set>");
-    console.log("   --random <set>");
-    console.log("       Choose from a string set. Default is Base94");
-    console.log("       <set> must be one of:");
-    console.log("           Base256, Base188, Base94, Base85, Base64, Base62, Base58, Base52");
-    console.log("           Base36, Base32, Base26, Base16, Base10, Base8, Base2, Coins, DNA, Emoji");
-    console.log("       NOTE: If you want URL-safe Base64, use -u/--urlsafe.");
-    console.log("       NOTE: If you want Braile Base256, use -B/--braille.");
-    console.log("");
-    console.log("   -B");
-    console.log("   --braille");
-    console.log("       Use Braille patterns for Base256. Ignored with any other option.");
-    console.log("");
-    console.log("   -u");
-    console.log("   --url-safe");
-    console.log("       Use URL-safe characters for Base64. Ignored with any other option.");
-    console.log("");
-    console.log("   -o <generator>");
-    console.log("   --only <generator>");
-    console.log("       Choose a generator instead of printing all six (default).");
-    console.log("       <generator> must be one of:");
-    console.log("           Alternate, Bitcoin, Diceware, EFF, Pseudowords");
-    console.log("           Random, System");
-    console.log("");
-    console.log("   -m <number>");
-    console.log("   --min-entropy <number>");
-    console.log("       Set a minimum entropy requirement in bits. Default is 70.");
-    console.log("");
-    console.log("   -j");
-    console.log("   --json");
-    console.log("       Output the passwords and meta in JSON format.");
-    console.log("");
-    console.log("   -H");
-    console.log("   --hyphenate");
-    console.log("       Add hyphens to the Diceware, EFF, and Alternate passphrases.");
-    console.log("");
-    process.exit();
+function printUsage () {
+  console.log('Usage: node main.js [OPTION [ARG]]...')
+  console.log('NOTE: A Unicode font may be needed to view some of the passwords correctly.')
+  console.log('')
+  console.log('  -h, --help                 Print this help and exit.')
+  console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
+  console.log('                               WORDLIST must be one of:')
+  console.log('                                 Deseret, Colors, Elvish, Klingon, PGP,')
+  console.log('                                 Rockyou, Shavian, Simpsons, Trump')
+  console.log('  -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.')
+  console.log('                               LANGUAGE must be one of:')
+  console.log('                                Chinese, Czech, English, French, Italian,')
+  console.log('                                Japanese, Korean, Portuguese')
+  console.log('                               NOTE: Simplified Chinese is the default Chinese')
+  console.log('                               character set. If you want to use Traditional')
+  console.log('                               Chinese, use --traditional.')
+  console.log('  -B, --bubble               Choose Bubble Babble encoding.')
+  console.log('  -d, --diceware LANGUAGE    Choose a Diceware language. Default is English.')
+  console.log('                               LANGUAGE must be one of:')
+  console.log('                                 Basque, Beale, Bulgarian, Catalan, Chinese,')
+  console.log('                                 Czech, Danish, Dutch, English, Esperanto,')
+  console.log('                                 Estonian, Finnish, French, German, Hebrew,')
+  console.log('                                 Hungarian, Italian, Japanese, Latin, Maori,')
+  console.log('                                 Norwegian, Polish, Portuguese, Romanian,')
+  console.log('                                 Russian, Slovak, Slovenian, Spanish, Swedish,')
+  console.log('                                 Turkish')
+  console.log('  -D, --dicekey              Generate a hard-coded 198-bit entropy text-based')
+  console.log('                               DiceKeys key. Format of the key is:')
+  console.log('                               <character><side><orientation> where:')
+  console.log('                                 <character>: Shuffled A-Z without Q ')
+  console.log('                                      <side>: Random side 1-6 of the die')
+  console.log('                               <orientation>: Random N,E,S,W cardinal direction')
+  console.log('  -e, --eff WORDLIST         Choose an EFF wordlist. Default is Short.')
+  console.log('                               WORDLIST must be one of:')
+  console.log('                                 Distant, Long, Potter, Short, Trek, Wars.')
+  console.log('  -j, --json                 Output the passwords and meta in JSON format.')
+  console.log('  -k, --kpop                 Choose Korean K-pop words.')
+  console.log('  -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.')
+  console.log('  -n, --ninja                Choose Secret Ninja encoding.')
+  console.log('  -o, --only GENERATOR       Choose a generator instead of printing all six.')
+  console.log('                               GENERATOR must be one of:')
+  console.log('                                 Alternate, Bitcoin, Diceware, EFF,')
+  console.log('                                 Pseudowords, Random, System')
+  console.log('  -r, --random SET           Choose from a string set. Default is Base94')
+  console.log('                               SET must be one of:')
+  console.log('                                 Base256, Base188, Base94, Base85, Base64,')
+  console.log('                                 Base62, Base58, Base52, Base36, Base32,')
+  console.log('                                 Base26, Base16, Base10, Base8, Base2, Coins,')
+  console.log('                                 DNA, Emoji')
+  console.log('                               NOTE: Braile Base256, use -R, --braille.')
+  console.log('  -R, --braille              Use Braille patterns for Base256.')
+  console.log('  -s, --system               Use /usr/share/dict/words for the passphrase.')
+  console.log('                               NOTE: larger word lists have more obscure words.')
+  console.log('  -t, --traditional          Use Traditional Chinese with Bitcoin.')
+  console.log('  -H, --hyphenate            Hyphenate Diceware, EFF, & Alternate passphrases.')
+  process.exit()
 }
 
-String.prototype.rtrim = function() { return this.replace(/\s+$/g,""); }
-
-function get_entropy() {
-    var entropy;
-    if (args.indexOf("--min-entropy") != -1) {
-        entropy = args[args.indexOf("--min-entropy") + 1 ];
-    }
-    else if (args.indexOf("-m") != -1) {
-        entropy = args[args.indexOf("-m") + 1 ];
-    }
-    else {
-        return 70;
-    }
-    if (entropy < 55) {
-        console.log("Entropy value too low. Must be at least 55-bits.");
-        process.exit(1);
-    }
-    else {
-        return entropy;
-    }
+function getEntropy () {
+  let entropy
+  if (args.indexOf('--min-entropy') !== -1) {
+    entropy = args[args.indexOf('--min-entropy') + 1]
+  } else if (args.indexOf('-m') !== -1) {
+    entropy = args[args.indexOf('-m') + 1]
+  } else {
+    return 70
+  }
+  if (entropy < 55) {
+    console.log('Entropy value too low. Must be at least 55-bits.')
+    process.exit(1)
+  } else {
+    return entropy
+  }
 }
 
-function sec_rand(count) {
-    var min, rand;
-    count >>>= 0;
-    min = (-count >>> 0) % count;
-    do {
-        rand = parseInt(crypto.randomBytes(4).toString('hex'), 16);
-    } while (rand < min);
-    return rand % count;
+function secRand (count) {
+  let rand
+  count >>>= 0
+  const min = (-count >>> 0) % count
+  do {
+    rand = parseInt(crypto.randomBytes(4).toString('hex'), 16)
+  } while (rand < min)
+  return rand % count
 }
 
-function generate_pass(len, set, spaces) {
-    var pass = "";
-    if (typeof set == "string") {
-        var pass_arr = set.split("");
-    }
-    else {
-        pass_arr = set;
-    }
-    for(i=len; i--;) {
-        if (spaces) {
-            pass += pass_arr[sec_rand(set.length)];
-            pass += " ";
-        }
-        else pass += pass_arr[sec_rand(set.length)];
-    }
-    return pass.rtrim();
+function generatePass (len, set, spaces) {
+  let pass = ''
+  let passArr = ''
+  if (typeof set === 'string') {
+    passArr = set.split('')
+  } else {
+    passArr = set
+  }
+  for (let i = len; i--;) {
+    if (spaces) {
+      pass += passArr[secRand(set.length)]
+      pass += ' '
+    } else pass += passArr[secRand(set.length)]
+  }
+  return pass.trim()
 }
 
-function generate_diceware() {
-    if (args.indexOf("--diceware") != -1) {
-        var lang = args[args.indexOf("--diceware") + 1];
+function generateDiceware () {
+  let lang
+  let wordlist = []
+  if (args.indexOf('--diceware') !== -1) {
+    lang = args[args.indexOf('--diceware') + 1]
+  } else if (args.indexOf('-d') !== -1) {
+    lang = args[args.indexOf('-d') + 1]
+  } else {
+    lang = 'English'
+  }
+  switch (lang) {
+    case 'Basque':
+    case 'basque': {
+      const dicewareBasque = require('./lists/dicewareBasque')
+      wordlist = dicewareBasque.wordlist
+      lang = 'Basque'
+      break
     }
-    else if (args.indexOf("-d") != -1) {
-        var lang = args[args.indexOf("-d") + 1];
+    case 'Beale':
+    case 'beale': {
+      const dicewareBeale = require('./lists/dicewareBeale')
+      wordlist = dicewareBeale.wordlist
+      lang = 'Beale'
+      break
     }
-    else {
-        var lang = "English";
+    case 'Bulgarian':
+    case 'bulgarian': {
+      const dicewareBulgarian = require('./lists/dicewareBulgarian')
+      wordlist = dicewareBulgarian.wordlist
+      lang = 'Bulgarian'
+      break
     }
-    var wordlist = [];
-    switch(lang) {
-        case "Basque":
-        case "basque":
-            const diceware_basque = require('./lists/diceware_basque');
-            wordlist = diceware_basque.wordlist;
-            break;
-        case "Beale":
-        case "beale":
-            const diceware_beale = require('./lists/diceware_beale');
-            wordlist = diceware_beale.wordlist;
-            break;
-        case "Bulgarian":
-        case "bulgarian":
-            const diceware_bulgarian = require('./lists/diceware_bulgarian');
-            wordlist = diceware_bulgarian.wordlist;
-            break;
-        case "Catalan":
-        case "catalan":
-            const diceware_catalan = require('./lists/diceware_catalan');
-            wordlist = diceware_catalan.wordlist;
-            break;
-        case "Chinese":
-        case "chinese":
-            const diceware_chinese = require('./lists/diceware_chinese');
-            wordlist = diceware_chinese.wordlist;
-            break;
-        case "Czech":
-        case "czech":
-            const diceware_czech = require('./lists/diceware_czech');
-            wordlist = diceware_czech.wordlist;
-            break;
-        case "Danish":
-        case "danish":
-            const diceware_danish = require('./lists/diceware_danish');
-            wordlist = diceware_danish.wordlist;
-            break;
-        case "Dutch":
-        case "dutch":
-            const diceware_dutch = require('./lists/diceware_dutch');
-            wordlist = diceware_dutch.wordlist;
-            break;
-        case "Dutch-Alt":
-        case "Dutch-alt":
-        case "dutch-Alt":
-        case "dutch-alt":
-            const diceware_dutch_alt = require('./lists/diceware_dutch_alt');
-            wordlist = diceware_dutch_alt.wordlist;
-            break;
-        case "English":
-        case "english":
-            const diceware_english = require('./lists/diceware_english');
-            wordlist = diceware_english.wordlist;
-            break;
-        case "Esperanto":
-        case "esperanto":
-            const diceware_esperanto = require('./lists/diceware_esperanto');
-            wordlist = diceware_esperanto.wordlist;
-            break;
-        case "Estonian":
-        case "estonian":
-            const diceware_estonian = require('./lists/diceware_estonian');
-            wordlist = diceware_estonian.wordlist;
-            break;
-        case "Finnish":
-        case "finnish":
-            const diceware_finnish = require('./lists/diceware_finnish');
-            wordlist = diceware_finnish.wordlist;
-            break;
-        case "French":
-        case "french":
-            const diceware_french = require('./lists/diceware_french');
-            wordlist = diceware_french.wordlist;
-            break;
-        case "German":
-        case "german":
-            const diceware_german = require('./lists/diceware_german');
-            wordlist = diceware_german.wordlist;
-            break;
-        case "Hebrew":
-        case "hebrew":
-            const diceware_hebrew = require('./lists/diceware_hebrew');
-            wordlist = diceware_hebrew.wordlist;
-            break;
-        case "Hungarian":
-        case "hungarian":
-            const diceware_hungarian = require('./lists/diceware_hungarian');
-            wordlist = diceware_hungarian.wordlist;
-            break;
-        case "Italian":
-        case "italian":
-            const diceware_italian = require('./lists/diceware_italian');
-            wordlist = diceware_italian.wordlist;
-            break;
-        case "Japanese":
-        case "japanese":
-            const diceware_japanese = require('./lists/diceware_japanese');
-            wordlist = diceware_japanese.wordlist;
-            break;
-        case "Latin":
-        case "latin":
-            const diceware_latin = require('./lists/diceware_latin');
-            wordlist = diceware_latin.wordlist;
-            break;
-        case "Maori":
-        case "maori":
-            const diceware_maori = require('./lists/diceware_maori');
-            wordlist = diceware_maori.wordlist;
-            break;
-        case "Norwegian":
-        case "norwegian":
-            const diceware_norwegian = require('./lists/diceware_norwegian');
-            wordlist = diceware_norwegian.wordlist;
-            break;
-        case "Polish":
-        case "polish":
-            const diceware_polish = require('./lists/diceware_polish');
-            wordlist = diceware_polish.wordlist;
-            break;
-        case "Portuguese":
-        case "portuguese":
-            const diceware_portuguese = require('./lists/diceware_portuguese');
-            wordlist = diceware_portuguese.wordlist;
-            break;
-        case "Russian":
-        case "russian":
-            const diceware_russian = require('./lists/diceware_russian');
-            wordlist = diceware_russian.wordlist;
-            break;
-        case "Slovak":
-        case "slovak":
-            const diceware_slovak = require('./lists/diceware_slovak');
-            wordlist = diceware_slovak.wordlist;
-            break;
-        case "Slovenian":
-        case "slovenian":
-            const diceware_slovenian = require('./lists/diceware_slovenian');
-            wordlist = diceware_slovenian.wordlist;
-            break;
-        case "Spanish":
-        case "spanish":
-            const diceware_spanish = require('./lists/diceware_spanish');
-            wordlist = diceware_spanish.wordlist;
-            break;
-        case "Swedish":
-        case "swedish":
-            const diceware_swedish = require('./lists/diceware_swedish');
-            wordlist = diceware_swedish.wordlist;
-            break;
-        case "Turkish":
-        case "turkish":
-            const diceware_turkish = require('./lists/diceware_turkish');
-            wordlist = diceware_turkish.wordlist;
-            break;
-        default:
-            console.log("Unknown language: " + lang);
-            process.exit(1);
+    case 'Catalan':
+    case 'catalan': {
+      const dicewareCatalan = require('./lists/dicewareCatalan')
+      wordlist = dicewareCatalan.wordlist
+      lang = 'Catalan'
+      break
     }
-    var assoc_arr = {};
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(wordlist.length));
-    var pass = generate_pass(len, wordlist, true);
-    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
-        pass = pass.split(" ").join("-");
+    case 'Chinese':
+    case 'chinese': {
+      const dicewareChinese = require('./lists/dicewareChinese')
+      wordlist = dicewareChinese.wordlist
+      lang = 'Chinese'
+      break
     }
-    assoc_arr["Generator"] = "Diceware";
-    assoc_arr["Wordlist"] = lang;
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
-    return assoc_arr;
+    case 'Czech':
+    case 'czech': {
+      const dicewareCzech = require('./lists/dicewareCzech')
+      wordlist = dicewareCzech.wordlist
+      lang = 'Czech'
+      break
+    }
+    case 'Danish':
+    case 'danish': {
+      const dicewareDanish = require('./lists/dicewareDanish')
+      wordlist = dicewareDanish.wordlist
+      lang = 'Danish'
+      break
+    }
+    case 'Dutch':
+    case 'dutch': {
+      const dicewareDutch = require('./lists/dicewareDutch')
+      wordlist = dicewareDutch.wordlist
+      lang = 'Dutch'
+      break
+    }
+    case 'English':
+    case 'english': {
+      const dicewareEnglish = require('./lists/dicewareEnglish')
+      wordlist = dicewareEnglish.wordlist
+      lang = 'English'
+      break
+    }
+    case 'Esperanto':
+    case 'esperanto': {
+      const dicewareEsperanto = require('./lists/dicewareEsperanto')
+      wordlist = dicewareEsperanto.wordlist
+      lang = 'Esperanto'
+      break
+    }
+    case 'Estonian':
+    case 'estonian': {
+      const dicewareEstonian = require('./lists/dicewareEstonian')
+      wordlist = dicewareEstonian.wordlist
+      lang = 'Estonian'
+      break
+    }
+    case 'Finnish':
+    case 'finnish': {
+      const dicewareFinnish = require('./lists/dicewareFinnish')
+      wordlist = dicewareFinnish.wordlist
+      lang = 'Finnish'
+      break
+    }
+    case 'French':
+    case 'french': {
+      const dicewareFrench = require('./lists/dicewareFrench')
+      wordlist = dicewareFrench.wordlist
+      lang = 'French'
+      break
+    }
+    case 'German':
+    case 'german': {
+      const dicewareGerman = require('./lists/dicewareGerman')
+      wordlist = dicewareGerman.wordlist
+      lang = 'German'
+      break
+    }
+    case 'Hebrew':
+    case 'hebrew': {
+      const dicewareHebrew = require('./lists/dicewareHebrew')
+      wordlist = dicewareHebrew.wordlist
+      lang = 'Hebrew'
+      break
+    }
+    case 'Hungarian':
+    case 'hungarian': {
+      const dicewareHungarian = require('./lists/dicewareHungarian')
+      wordlist = dicewareHungarian.wordlist
+      lang = 'Hungarian'
+      break
+    }
+    case 'Italian':
+    case 'italian': {
+      const dicewareItalian = require('./lists/dicewareItalian')
+      wordlist = dicewareItalian.wordlist
+      lang = 'Italian'
+      break
+    }
+    case 'Japanese':
+    case 'japanese': {
+      const dicewareJapanese = require('./lists/dicewareJapanese')
+      wordlist = dicewareJapanese.wordlist
+      lang = 'Japanese'
+      break
+    }
+    case 'Latin':
+    case 'latin': {
+      const dicewareLatin = require('./lists/dicewareLatin')
+      wordlist = dicewareLatin.wordlist
+      lang = 'Latin'
+      break
+    }
+    case 'Maori':
+    case 'maori': {
+      const dicewareMaori = require('./lists/dicewareMaori')
+      wordlist = dicewareMaori.wordlist
+      lang = 'Maori'
+      break
+    }
+    case 'Norwegian':
+    case 'norwegian': {
+      const dicewareNorwegian = require('./lists/dicewareNorwegian')
+      wordlist = dicewareNorwegian.wordlist
+      lang = 'Norwegian'
+      break
+    }
+    case 'Polish':
+    case 'polish': {
+      const dicewarePolish = require('./lists/dicewarePolish')
+      wordlist = dicewarePolish.wordlist
+      lang = 'Polish'
+      break
+    }
+    case 'Portuguese':
+    case 'portuguese': {
+      const dicewarePortuguese = require('./lists/dicewarePortuguese')
+      wordlist = dicewarePortuguese.wordlist
+      lang = 'Portuguese'
+      break
+    }
+    case 'Romanian':
+    case 'romanian': {
+      const dicewareRomanian = require('./lists/dicewareRomanian')
+      wordlist = dicewareRomanian.wordlist
+      lang = 'Romanian'
+      break
+    }
+    case 'Russian':
+    case 'russian': {
+      const dicewareRussian = require('./lists/dicewareRussian')
+      wordlist = dicewareRussian.wordlist
+      lang = 'Russian'
+      break
+    }
+    case 'Slovak':
+    case 'slovak': {
+      const dicewareSlovak = require('./lists/dicewareSlovak')
+      wordlist = dicewareSlovak.wordlist
+      lang = 'Slovak'
+      break
+    }
+    case 'Slovenian':
+    case 'slovenian': {
+      const dicewareSlovenian = require('./lists/dicewareSlovenian')
+      wordlist = dicewareSlovenian.wordlist
+      lang = 'Slovenian'
+      break
+    }
+    case 'Spanish':
+    case 'spanish': {
+      const dicewareSpanish = require('./lists/dicewareSpanish')
+      wordlist = dicewareSpanish.wordlist
+      lang = 'Spanish'
+      break
+    }
+    case 'Swedish':
+    case 'swedish': {
+      const dicewareSwedish = require('./lists/dicewareSwedish')
+      wordlist = dicewareSwedish.wordlist
+      lang = 'Swedish'
+      break
+    }
+    case 'Turkish':
+    case 'turkish': {
+      const dicewareTurkish = require('./lists/dicewareTurkish')
+      wordlist = dicewareTurkish.wordlist
+      lang = 'Turkish'
+      break
+    }
+    default: {
+      console.log('Unknown language: ' + lang)
+      process.exit(1)
+    }
+  }
+  const assocArr = {}
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+  let pass = generatePass(len, wordlist, true)
+  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+    pass = pass.split(' ').join('-')
+  }
+  assocArr.Generator = 'Diceware'
+  assocArr.Wordlist = lang
+  assocArr.Password = pass
+  assocArr.Characters = pass.replace(/\s/g, '').length
+  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  return assocArr
 }
 
-function generate_eff() {
-    if (args.indexOf("--eff") != -1) {
-        var eff_set = args[args.indexOf("--eff") + 1];
+function generateEff () {
+  let effSet
+  let wordlist = []
+  if (args.indexOf('--eff') !== -1) {
+    effSet = args[args.indexOf('--eff') + 1]
+  } else if (args.indexOf('-e') !== -1) {
+    effSet = args[args.indexOf('-e') + 1]
+  } else {
+    effSet = 'Short'
+  }
+  switch (effSet) {
+    case 'Distant':
+    case 'distant': {
+      const effDistant = require('./lists/effDistant')
+      wordlist = effDistant.wordlist
+      effSet = 'Distant'
+      break
     }
-    else if (args.indexOf("-e") != -1) {
-        var eff_set = args[args.indexOf("-e") + 1];
+    case 'Long':
+    case 'long': {
+      const effLong = require('./lists/effLong')
+      wordlist = effLong.wordlist
+      effSet = 'Long'
+      break
     }
-    else {
-        var eff_set = "Short";
+    case 'Potter':
+    case 'potter': {
+      const effHarryPotter = require('./lists/effHarryPotter')
+      wordlist = effHarryPotter.wordlist
+      effSet = 'Harry Potter'
+      break
     }
-    var wordlist = [];
-    switch(eff_set) {
-        case "Distant":
-        case "distant":
-            const eff_distant = require('./lists/eff_distant');
-            wordlist = eff_distant.eff_distant;
-            break;
-        case "Long":
-        case "long":
-            const eff_long = require('./lists/eff_long');
-            wordlist = eff_long.eff_long;
-            break;
-        case "Potter":
-        case "potter":
-            const eff_harrypotter = require('./lists/eff_harrypotter');
-            wordlist = eff_harrypotter.eff_harrypotter;
-            break;
-        case "Short":
-        case "short":
-            const eff_short = require('./lists/eff_short');
-            wordlist = eff_short.eff_short;
-            break;
-        case "Thrones":
-        case "thrones":
-            const eff_gameofthrones = require('./lists/eff_gameofthrones');
-            wordlist = eff_gameofthrones.eff_gameofthrones;
-            break;
-        case "Trek":
-        case "trek":
-            const eff_startrek = require('./lists/eff_startrek');
-            wordlist = eff_startrek.eff_startrek;
-            break;
-        case "Wars":
-        case "wars":
-            const eff_starwars = require('./lists/eff_starwars');
-            wordlist = eff_starwars.eff_starwars;
-            break;
-        default:
-            console.log("Unknown wordlist: " + eff_set);
-            process.exit();
+    case 'Short':
+    case 'short': {
+      const effShort = require('./lists/effShort')
+      wordlist = effShort.wordlist
+      effSet = 'Short'
+      break
     }
-    var assoc_arr = {};
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(wordlist.length));
-    var pass = generate_pass(len, wordlist, true);
-    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
-        pass = pass.split(" ").join("-");
+    case 'Thrones':
+    case 'thrones': {
+      const effGameOfThrones = require('./lists/effGameOfThrones')
+      wordlist = effGameOfThrones.wordlist
+      effSet = 'Game of Thrones'
+      break
     }
-    assoc_arr["Generator"] = "EFF";
-    assoc_arr["Wordlist"] = eff_set;
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
-    return assoc_arr;
+    case 'Trek':
+    case 'trek': {
+      const effStarTrek = require('./lists/effStarTrek')
+      wordlist = effStarTrek.wordlist
+      effSet = 'Star Trek'
+      break
+    }
+    case 'Wars':
+    case 'wars': {
+      const effStarWars = require('./lists/effStarWars')
+      wordlist = effStarWars.wordlist
+      effSet = 'Star Wars'
+      break
+    }
+    default: {
+      console.log('Unknown wordlist: ' + effSet)
+      process.exit()
+    }
+  }
+  const assocArr = {}
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+  let pass = generatePass(len, wordlist, true)
+  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+    pass = pass.split(' ').join('-')
+  }
+  assocArr.Generator = 'EFF'
+  assocArr.Wordlist = effSet
+  assocArr.Password = pass
+  assocArr.Characters = pass.replace(/\s/g, '').length
+  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  return assocArr
 }
 
-function generate_alternate() {
-    if (args.indexOf("--alternate") != -1) {
-        var alt_set = args[args.indexOf("--alternate") + 1];
+function generateAlternate () {
+  let altSet
+  let wordlist = []
+  if (args.indexOf('--alternate') !== -1) {
+    altSet = args[args.indexOf('--alternate') + 1]
+  } else if (args.indexOf('-a') !== -1) {
+    altSet = args[args.indexOf('-a') + 1]
+  } else {
+    altSet = 'Trump'
+  }
+  switch (altSet) {
+    case 'Deseret':
+    case 'deseret': {
+      const deseretWordlist = require('./lists/alternateDeseret')
+      wordlist = deseretWordlist.wordlist
+      altSet = 'Deseret'
+      break
     }
-    else if (args.indexOf("-a") !=-1) {
-        var alt_set = args[args.indexOf("-a") + 1];
+    case 'Colors':
+    case 'colors': {
+      const colorsWordlist = require('./lists/alternateColors')
+      wordlist = colorsWordlist.wordlist
+      altSet = 'Colors'
+      break
     }
-    else {
-        var alt_set = "Trump";
+    case 'Elvish':
+    case 'elvish': {
+      const elvishWordlist = require('./lists/alternateElvish')
+      wordlist = elvishWordlist.wordlist
+      altSet = 'Elvish'
+      break
     }
-    var wordlist = [];
-    switch(alt_set) {
-        case "Deseret":
-        case "deseret":
-            const deseret_wordlist = require('./lists/alternate_deseret');
-            wordlist = deseret_wordlist.wordlist;
-            break;
-        case "Colors":
-        case "colors":
-            const colors_wordlist = require('./lists/alternate_colors');
-            wordlist = colors_wordlist.wordlist;
-            break;
-        case "Elvish":
-        case "elvish":
-            const elvish_wordlist = require('./lists/alternate_elvish');
-            wordlist = elvish_wordlist.wordlist;
-            break;
-        case "Klingon":
-        case "klingon":
-            const klingon_wordlist = require('./lists/alternate_klingon');
-            wordlist = klingon_wordlist.wordlist;
-            break;
-        case "PGP":
-        case "Pgp":
-        case "pgp":
-            const pgp_wordlist = require('./lists/alternate_pgp');
-            wordlist = pgp_wordlist.wordlist;
-            break;
-        case "Rockyou":
-        case "RockYou":
-        case "rockyou":
-            const rockyou_wordlist = require('./lists/alternate_rockyou');
-            wordlist = rockyou_wordlist.wordlist;
-            break;
-        case "Shavian":
-        case "shavian":
-            const shavian_wordlist = require('./lists/alternate_shavian');
-            wordlist = shavian_wordlist.wordlist;
-            break;
-        case "Simpsons":
-        case "simpsons":
-            const simpsons_wordlist = require('./lists/alternate_simpsons');
-            wordlist = simpsons_wordlist.wordlist;
-            break;
-        case "Trump":
-        case "trump":
-            const trump_wordlist = require('./lists/alternate_trump');
-            wordlist = trump_wordlist.wordlist;
-            break;
-        default:
-            console.log("Unknown wordlist: " + alt_set);
-            process.exit(1);
+    case 'Klingon':
+    case 'klingon': {
+      const klingonWordlist = require('./lists/alternateKlingon')
+      wordlist = klingonWordlist.wordlist
+      altSet = 'Klingon'
+      break
     }
-    var assoc_arr = {};
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(wordlist.length));
-    var pass = generate_pass(len, wordlist, true);
-    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
-        pass = pass.split(" ").join("-");
+    case 'PGP':
+    case 'Pgp':
+    case 'pgp': {
+      const pgpWordlist = require('./lists/alternatePgp')
+      wordlist = pgpWordlist.wordlist
+      altSet = 'PGP'
+      break
     }
-    assoc_arr["Generator"] = "Alternate";
-    assoc_arr["Wordlist"] = alt_set;
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
-    return assoc_arr;
+    case 'Rockyou':
+    case 'RockYou':
+    case 'rockyou': {
+      const rockyouWordlist = require('./lists/alternateRockyou')
+      wordlist = rockyouWordlist.wordlist
+      altSet = 'RockYou'
+      break
+    }
+    case 'Shavian':
+    case 'shavian': {
+      const shavianWordlist = require('./lists/alternateShavian')
+      wordlist = shavianWordlist.wordlist
+      altSet = 'Shavian'
+      break
+    }
+    case 'Simpsons':
+    case 'simpsons': {
+      const simpsonsWordlist = require('./lists/alternateSimpsons')
+      wordlist = simpsonsWordlist.wordlist
+      altSet = 'Simpsons'
+      break
+    }
+    case 'Trump':
+    case 'trump': {
+      const trumpWordlist = require('./lists/alternateTrump')
+      wordlist = trumpWordlist.wordlist
+      altSet = 'Trump'
+      break
+    }
+    default: {
+      console.log('Unknown wordlist: ' + altSet)
+      process.exit(1)
+    }
+  }
+  const assocArr = {}
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+  let pass = generatePass(len, wordlist, true)
+  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+    pass = pass.split(' ').join('-')
+  }
+  assocArr.Generator = 'Alternate'
+  assocArr.Wordlist = altSet
+  assocArr.Password = pass
+  assocArr.Characters = pass.replace(/\s/g, '').length
+  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  return assocArr
 }
 
-function generate_bitcoin() {
-    if (args.indexOf("--bitcoin") != -1) {
-        var lang = args[args.indexOf("--bitcoin") + 1];
+function generateBitcoin () {
+  let lang
+  let wordlist = []
+  if (args.indexOf('--bitcoin') !== -1) {
+    lang = args[args.indexOf('--bitcoin') + 1]
+  } else if (args.indexOf('-b') !== -1) {
+    lang = args[args.indexOf('-b') + 1]
+  } else {
+    lang = 'English'
+  }
+  switch (lang) {
+    case 'Chinese':
+    case 'chinese': {
+      if ((args.indexOf('--traditional')) !== -1 || (args.indexOf('-t')) !== -1) {
+        const bitcoinCNTrad = require('./lists/bitcoinCNTrad')
+        wordlist = bitcoinCNTrad.wordlist
+        lang = 'Chinese (Trad)'
+      } else {
+        const bitcoinCNSimp = require('./lists/bitcoinCNSimp')
+        wordlist = bitcoinCNSimp.wordlist
+        lang = 'Chinese (Simp)'
+      }
+      break
     }
-    else if (args.indexOf("-b") != -1) {
-        var lang = args[args.indexOf("-b") + 1];
+    case 'Czech':
+    case 'czech': {
+      const czechWordlist = require('./lists/bitcoinCZ')
+      wordlist = czechWordlist.wordlist
+        lang = 'Czech'
+      break
     }
-    else {
-        var lang = "English";
+    case 'English':
+    case 'english': {
+      const englishWordlist = require('./lists/bitcoinEN')
+      wordlist = englishWordlist.wordlist
+        lang = 'English'
+      break
     }
-    var wordlist = [];
-    switch(lang) {
-        case "Chinese":
-        case "chinese":
-            if ((args.indexOf("--traditional")) != -1 || (args.indexOf("-t")) != -1) {
-                const bitcoin_cn_trad = require('./lists/bitcoin_cn_trad');
-                wordlist = bitcoin_cn_trad.wordlist;
-            }
-            else {
-                const bitcoin_cn_simp = require('./lists/bitcoin_cn_simp');
-                wordlist = bitcoin_cn_simp.wordlist;
-            }
-            break;
-        case "Czech":
-        case "czech":
-            const czech_wordlist = require('./lists/bitcoin_cz');
-            wordlist = czech_wordlist.wordlist;
-            break;
-        case "English":
-        case "english":
-            const english_wordlist = require('./lists/bitcoin_en');
-            wordlist = english_wordlist.wordlist;
-            break;
-        case "French":
-        case "french":
-            const french_wordlist = require('./lists/bitcoin_fr');
-            wordlist = french_wordlist.wordlist;
-            break;
-        case "Italian":
-        case "italian":
-            const italian_wordlist = require('./lists/bitcoin_it');
-            wordlist = italian_wordlist.wordlist;
-            break;
-        case "Japanese":
-        case "japanese":
-            const japanese_wordlist = require('./lists/bitcoin_jp');
-            wordlist = japanese_wordlist.wordlist;
-            break;
-        case "Korean":
-        case "korean":
-            const korean_wordlist = require('./lists/bitcoin_kr');
-            wordlist = korean_wordlist.wordlist;
-            break;
-        case "Portuguese":
-        case "portuguese":
-            const portuguese_wordlist = require('./lists/bitcoin_pt');
-            wordlist = portuguese_wordlist.wordlist;
-            break;
-        case "Spanish":
-        case "spanish":
-            const spanish_wordlist = require('./lists/bitcoin_es');
-            wordlist = spanish_wordlist.wordlist;
-            break;
-        default:
-            console.log("Unknown language: " + lang);
-            process.exit(1);
+    case 'French':
+    case 'french': {
+      const frenchWordlist = require('./lists/bitcoinFR')
+      wordlist = frenchWordlist.wordlist
+        lang = 'French'
+      break
     }
-    var assoc_arr = {};
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(wordlist.length));
-    var pass = generate_pass(len, wordlist, true);
-    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
-        pass = pass.split(" ").join("-");
+    case 'Italian':
+    case 'italian': {
+      const italianWordlist = require('./lists/bitcoinIT')
+      wordlist = italianWordlist.wordlist
+        lang = 'Italian'
+      break
     }
-    assoc_arr["Generator"] = "Bitcoin";
-    assoc_arr["Wordlist"] = lang;
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
-    return assoc_arr;
+    case 'Japanese':
+    case 'japanese': {
+      const japaneseWordlist = require('./lists/bitcoinJP')
+      wordlist = japaneseWordlist.wordlist
+        lang = 'Japanese'
+      break
+    }
+    case 'Korean':
+    case 'korean': {
+      const koreanWordlist = require('./lists/bitcoinKR')
+      wordlist = koreanWordlist.wordlist
+        lang = 'Korean'
+      break
+    }
+    case 'Portuguese':
+    case 'portuguese': {
+      const portugueseWordlist = require('./lists/bitcoinPT')
+      wordlist = portugueseWordlist.wordlist
+        lang = 'Portuguese'
+      break
+    }
+    case 'Spanish':
+    case 'spanish': {
+      const spanishWordlist = require('./lists/bitcoinES')
+      wordlist = spanishWordlist.wordlist
+        lang = 'Spanish'
+      break
+    }
+    default: {
+      console.log('Unknown language: ' + lang)
+      process.exit(1)
+    }
+  }
+  const assocArr = {}
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+  let pass = generatePass(len, wordlist, true)
+  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+    pass = pass.split(' ').join('-')
+  }
+  assocArr.Generator = 'Bitcoin'
+  assocArr.Wordlist = lang
+  assocArr.Password = pass
+  assocArr.Characters = pass.replace(/\s/g, '').length
+  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  return assocArr
 }
 
-function generate_dicekey() {
-    var chars = "ABCDEFGHIJKLMNOPRSTUVWXYZ".split("");
-    var pass = "";
-    var assoc_arr = {};
-    for (let i=0; i<chars.length; i++) {
-        let randInt = sec_rand(chars.length);
-        let tmp = chars[randInt];
-        chars[randInt] = chars[i];
-        chars[i] = tmp;
-    }
-    for (let i=0; i<chars.length; i++) {
-        let dir = "NESW".split("");
-        pass += chars[i];
-        pass += sec_rand(6) + 1;
-        pass += dir[sec_rand(4)];
-        pass += " ";
-    }
-    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
-        pass = pass.rtrim().split(" ").join("-");
-    }
-    assoc_arr["Generator"] = "DiceKey";
-    assoc_arr["Wordlist"] = "N/A";
-    assoc_arr["Password"] = pass.rtrim();
-    assoc_arr["Characters"] = pass.rtrim().replace(/\s/g, '').length;
-    assoc_arr["Entropy"] = 198; // hard-coded
-    return assoc_arr;
+function generateDicekey () {
+  const chars = 'ABCDEFGHIJKLMNOPRSTUVWXYZ'.split('')
+  let pass = ''
+  const assocArr = {}
+  for (let i = 0; i < chars.length; i++) {
+    const randInt = secRand(chars.length)
+    const tmp = chars[randInt]
+    chars[randInt] = chars[i]
+    chars[i] = tmp
+  }
+  for (let i = 0; i < chars.length; i++) {
+    const dir = 'NESW'.split('')
+    pass += chars[i]
+    pass += secRand(6) + 1
+    pass += dir[secRand(4)]
+    pass += ' '
+  }
+  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+    pass = pass.trim().split(' ').join('-')
+  }
+  assocArr.Generator = 'DiceKey'
+  assocArr.Wordlist = 'N/A'
+  assocArr.Password = pass.trim()
+  assocArr.Characters = pass.trim().replace(/\s/g, '').length
+  assocArr.Entropy = 198 // hard-coded
+  return assocArr
 }
 
-function generate_sys_pass() {
-    var dict = fs.readFileSync("/usr/share/dict/words").toString();
-    var wordlist = dict.split('\n');
-    var assoc_arr = {};
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(wordlist.length));
-    var pass = generate_pass(len, wordlist, true);
-    if ((args.indexOf("--hyphenate") != -1) || (args.indexOf("-H")) != -1) {
-        pass = pass.split(" ").join("-");
-    }
-    assoc_arr["Generator"] = "System";
-    assoc_arr["Wordlist"] = "/usr/share/dict/words";
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = pass.replace(/\s/g, '').length;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
-    return assoc_arr;
+function generateSysPass () {
+  const dict = fs.readFileSync('/usr/share/dict/words').toString()
+  const wordlist = dict.split('\n')
+  const assocArr = {}
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+  let pass = generatePass(len, wordlist, true)
+  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+    pass = pass.split(' ').join('-')
+  }
+  assocArr.Generator = 'System'
+  assocArr.Wordlist = '/usr/share/dict/words'
+  assocArr.Password = pass
+  assocArr.Characters = pass.replace(/\s/g, '').length
+  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  return assocArr
 }
 
-function generate_apple() {
-    function _apple(n) {
-        /*
+function generateApple () {
+  function _apple (n) {
+    /*
             See the Twitter thread at https://twitter.com/AaronToponce/status/1131406726069084160 for full analysis.
 
             For n ≥ 1 blocks, the entropy in bits per block is:
@@ -631,7 +681,7 @@ function generate_apple() {
                     (6n-1) *    //  One lowercase alphabetic character is randomly capitalized
                     19^(4n-1) * //  The total possible combinations of consonants
                     6^(2n) *    //  The total possible combinations of vowels
-                    10 * 2n     //  An "edge" character is a random digit
+                    10 * 2n     //  An 'edge' character is a random digit
                 )
 
             E.G.:
@@ -641,451 +691,430 @@ function generate_apple() {
                 cvccVc-cvccvD-cvccvc-cvccvc: log2(23 * 19^15 * 6^8 * 10 * 8) ~=  95.244 bits
                 et cetera, et cetera, et cetera.
         */
-        return Math.floor(Math.log2((6*n-1)*19**(4*n-1)*6**(2*n)*20*n));
-    }
+    return Math.floor(Math.log2((6 * n - 1) * 19 ** (4 * n - 1) * 6 ** (2 * n) * 20 * n))
+  }
 
-    var pass = [];
-    var digits = "0123456789";
-    var vowels = "aeiouy";
-    var consonants = "bcdfghjkmnpqrstvwxz";
-    var entropy = get_entropy();
-    var v_ent = Math.log2(vowels.length);
-    var c_ent = Math.log2(consonants.length);
+  const pass = []
+  const digits = '0123456789'
+  const vowels = 'aeiouy'
+  const consonants = 'bcdfghjkmnpqrstvwxz'
+  const entropy = getEntropy()
 
-    var n = 1; // number of blocks
-    while (_apple(n) <= entropy) { n++; };
-    for (let i = 0; i < n; i++) {
-        pass[6*i]   = generate_pass(1, consonants);
-        pass[6*i+1] = generate_pass(1, vowels);
-        pass[6*i+2] = generate_pass(1, consonants);
-        pass[6*i+3] = generate_pass(1, consonants);
-        pass[6*i+4] = generate_pass(1, vowels);
-        pass[6*i+5] = generate_pass(1, consonants);
-    }
+  let n = 1 // number of blocks
+  while (_apple(n) <= entropy) { n++ };
+  for (let i = 0; i < n; i++) {
+    pass[6 * i] = generatePass(1, consonants)
+    pass[6 * i + 1] = generatePass(1, vowels)
+    pass[6 * i + 2] = generatePass(1, consonants)
+    pass[6 * i + 3] = generatePass(1, consonants)
+    pass[6 * i + 4] = generatePass(1, vowels)
+    pass[6 * i + 5] = generatePass(1, consonants)
+  }
 
-    var d_loc = 0;
-    var c_loc = 0;
-    var edge = sec_rand(2*n); // [0, 2n)
-    var digit = generate_pass(1, digits);
+  let dLoc = 0
+  let cLoc = 0
+  const edge = secRand(2 * n) // [0, 2n)
+  const digit = generatePass(1, digits)
 
-    if (edge % 2 == 0) { d_loc = 3*edge; }
-    else { d_loc = 3*edge+2; }
-    pass[d_loc] = digit;
+  if (edge % 2 === 0) { dLoc = 3 * edge } else { dLoc = 3 * edge + 2 }
+  pass[dLoc] = digit
 
-    do { c_loc = sec_rand(pass.length); } while (c_loc == d_loc);
-    pass[c_loc] = pass[c_loc].toUpperCase();
+  do { cLoc = secRand(pass.length) } while (cLoc === dLoc)
+  pass[cLoc] = pass[cLoc].toUpperCase()
 
-    for (let i = n-1; i > 0; i-- ) {
-        pass.splice(6*i, 0, "-");
-    }
+  for (let i = n - 1; i > 0; i--) {
+    pass.splice(6 * i, 0, '-')
+  }
 
-    return [pass.join(""), pass.length, _apple(n)];
+  return [pass.join(''), pass.length, _apple(n)]
 }
 
-function generate_ninja() {
-    var ninja = ['ka','zu','mi','te','ku','lu','ji','ri','ki','zu','me','ta','rin','to','mo','no','ke','shi','ari','chi','do','ru','mei','na','fu','zi'];
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(ninja.length));
-    var pass = "";
-    
-    for (i=0; i<len; i++) {
-        pass += ninja[sec_rand(len)];
-        if (i%3 == 2 && i != len-1) {
-            pass += "-";
-        }
+function generateNinja () {
+  const ninja = ['ka', 'zu', 'mi', 'te', 'ku', 'lu', 'ji', 'ri', 'ki', 'zu', 'me', 'ta', 'rin', 'to', 'mo', 'no', 'ke', 'shi', 'ari', 'chi', 'do', 'ru', 'mei', 'na', 'fu', 'zi']
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(ninja.length))
+  let pass = ''
+
+  for (let i = 0; i < len; i++) {
+    pass += ninja[secRand(len)]
+    if (i % 3 === 2 && i !== len - 1) {
+      pass += '-'
     }
-    return [pass, ninja.length, Math.floor(len*Math.log2(ninja.length))];
+  }
+  return [pass, ninja.length, Math.floor(len * Math.log2(ninja.length))]
 }
 
-function generate_kpop() {
-    // 64 unique words = 6 bits of entropy per word
-    var kpop = ['A','Ah','Bae','Bin','Bo','Choi','Chul','Da','Do','Dong','Eun','Gi','Gun','Ha','Hae','Hee','Ho','Hu','Hwa','Hwan','Hye','Hyo','Hyun','Il','In','Ja','Jae','Ji','Jin','Jong','Joo','Joon','Ju','Jun','Jung','Ki','Kun','Kyu','Lee','Mi','Min','Moon','Nam','Ok','Park','Rin','Seo','Seul','Shi','Sik','So','Song','Soo','Su','Sun','Sung','Won','Woo','Ye','Yeon','Yoo','Yu','Yul','Yun'];
-    var entropy = get_entropy();
-    var len = Math.ceil(entropy/Math.log2(kpop.length));
-    var pass = "";
-    
-    for (i=0; i<len; i++) {
-        pass += kpop[sec_rand(len)];
-        if (i%2 == 1 && i != len-1) {
-            pass += "-";
-        }
+function generateKpop () {
+  // 64 unique words = 6 bits of entropy per word
+  const kpop = ['A', 'Ah', 'Bae', 'Bin', 'Bo', 'Choi', 'Chul', 'Da', 'Do', 'Dong', 'Eun', 'Gi', 'Gun', 'Ha', 'Hae', 'Hee', 'Ho', 'Hu', 'Hwa', 'Hwan', 'Hye', 'Hyo', 'Hyun', 'Il', 'In', 'Ja', 'Jae', 'Ji', 'Jin', 'Jong', 'Joo', 'Joon', 'Ju', 'Jun', 'Jung', 'Ki', 'Kun', 'Kyu', 'Lee', 'Mi', 'Min', 'Moon', 'Nam', 'Ok', 'Park', 'Rin', 'Seo', 'Seul', 'Shi', 'Sik', 'So', 'Song', 'Soo', 'Su', 'Sun', 'Sung', 'Won', 'Woo', 'Ye', 'Yeon', 'Yoo', 'Yu', 'Yul', 'Yun']
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / Math.log2(kpop.length))
+  let pass = ''
+
+  for (let i = 0; i < len; i++) {
+    pass += kpop[secRand(len)]
+    if (i % 2 === 1 && i !== len - 1) {
+      pass += '-'
     }
-    return [pass, kpop.length, Math.floor(len*Math.log2(kpop.length))];
+  }
+  return [pass, kpop.length, Math.floor(len * Math.log2(kpop.length))]
 }
 
-function generate_babble() {
-    var pass = [];
-    var vowels = "aeiouy";
-    var consonants = "bcdfghklmnprstvzx";
-    var v_ent = Math.log2(vowels.length);
-    var c_ent = Math.log2(consonants.length);
-    var out_ent = (2*c_ent)+(2*v_ent);
-    var in_ent = (3*c_ent)+(2*v_ent);
-    var entropy = get_entropy();
-    entropy = entropy - (2*out_ent);
-    var len = Math.ceil(entropy/in_ent);
-    var tot_ent = out_ent + (len*in_ent) + out_ent;
-    for (var i=0; i<len+2; i++) {
-        for (var j=0; j<5; j++) {
-            if (j % 2 == 0) {
-                pass[(5*i)+j] = generate_pass(1, consonants);
-            }
-            else {
-                pass[(5*i)+j] = generate_pass(1, vowels);
-            }
-        }
+function generateBabble () {
+  const pass = []
+  const vowels = 'aeiouy'
+  const consonants = 'bcdfghklmnprstvzx'
+  const vEnt = Math.log2(vowels.length)
+  const cEnt = Math.log2(consonants.length)
+  const outEnt = (2 * cEnt) + (2 * vEnt)
+  const inEnt = (3 * cEnt) + (2 * vEnt)
+  let entropy = getEntropy()
+  entropy = entropy - (2 * outEnt)
+  const len = Math.ceil(entropy / inEnt)
+  const totEnt = outEnt + (len * inEnt) + outEnt
+  for (let i = 0; i < len + 2; i++) {
+    for (let j = 0; j < 5; j++) {
+      if (j % 2 === 0) {
+        pass[(5 * i) + j] = generatePass(1, consonants)
+      } else {
+        pass[(5 * i) + j] = generatePass(1, vowels)
+      }
     }
-    pass[0] = "x";
-    pass[pass.length-1] = "x";
-    for (var i=pass.length; i>0; i-=5) {
-        pass.splice(i, 0, "-");
-    }
-    pass.pop() // strip last "-"
-    return [pass.join(""), (len+2)*5, Math.floor(tot_ent)];
+  }
+  pass[0] = 'x'
+  pass[pass.length - 1] = 'x'
+  for (let i = pass.length; i > 0; i -= 5) {
+    pass.splice(i, 0, '-')
+  }
+  pass.pop() // strip last '-'
+  return [pass.join(''), (len + 2) * 5, Math.floor(totEnt)]
 }
 
-function generate_pseudowords() {
-    if ((args.indexOf("--bubble") != -1) || (args.indexOf("-B")) != -1) {
-        var pw_type = "Bubble_Babble";
-    }
-    else if ((args.indexOf("--ninja") != -1) || (args.indexOf("-n")) != -1) {
-        var pw_type = "Secret_Ninja";
-    }
-    else if ((args.indexOf("--kpop") != -1) || (args.indexOf("-k")) != -1) {
-        var pw_type = "Korean_K-pop";
-    }
-    else {
-        var pw_type = "Apple_Inc";
-    }
-    if (pw_type == "Apple_Inc") {
-        var ret = generate_apple();
-    }
-    else if (pw_type == "Secret_Ninja") {
-        var ret = generate_ninja();
-    }
-    else if (pw_type == "Korean_K-pop") {
-        var ret = generate_kpop();
-    }
-    else {
-        var ret = generate_babble();
-    }
-    var assoc_arr = {};
-    var pass = ret[0];
-    var len = ret[1];
-    var ent = ret[2];
-    assoc_arr["Generator"] = "Pseudowords";
-    assoc_arr["Wordlist"] = pw_type;
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = len;
-    assoc_arr["Entropy"] = ent;
-    return assoc_arr;
+function generatePseudowords () {
+  let pwType
+  let ret
+  if ((args.indexOf('--bubble') !== -1) || (args.indexOf('-B')) !== -1) {
+    pwType = 'Bubble_Babble'
+  } else if ((args.indexOf('--ninja') !== -1) || (args.indexOf('-n')) !== -1) {
+    pwType = 'Secret_Ninja'
+  } else if ((args.indexOf('--kpop') !== -1) || (args.indexOf('-k')) !== -1) {
+    pwType = 'Korean_K-pop'
+  } else {
+    pwType = 'Apple_Inc'
+  }
+  if (pwType === 'Apple_Inc') {
+    ret = generateApple()
+  } else if (pwType === 'Secret_Ninja') {
+    ret = generateNinja()
+  } else if (pwType === 'Korean_K-pop') {
+    ret = generateKpop()
+  } else {
+    ret = generateBabble()
+  }
+  const assocArr = {}
+  const pass = ret[0]
+  const len = ret[1]
+  const ent = ret[2]
+  assocArr.Generator = 'Pseudowords'
+  assocArr.Wordlist = pwType
+  assocArr.Password = pass
+  assocArr.Characters = len
+  assocArr.Entropy = ent
+  return assocArr
 }
 
-function generate_set(b, rand_set) {
-    rand_set = typeof rand_set !== 'undefined' ? rand_set : true;
-    var entropy = get_entropy();
-    var assoc_arr = {};
-    var ident = '';
-    var s = '';
-    switch(b) {
-        case 256:
-            if ((args.indexOf("--braille") != -1) || (args.indexOf("-B") != -1)){
-                s = "⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿";
-                s+= "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿";
-                s+= "⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿";
-                s+= "⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿";
-                ident = "Base256 (Braille)";
-            }
-            else {
-                s = "ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔḕḖḗḘḙḚḛḜḝḞḟḠḡḢḣḤḥḦḧḨḩḪḫḬḭḮḯḰḱḲḳḴḵḶḷḸḹḺḻḼḽḾḿ";
-                s+= "ṀṁṂṃṄṅṆṇṈṉṊṋṌṍṎṏṐṑṒṓṔṕṖṗṘṙṚṛṜṝṞṟṠṡṢṣṤṥṦṧṨṩṪṫṬṭṮṯṰṱṲṳṴṵṶṷṸṹṺṻṼṽṾṿ";
-                s+= "ẀẁẂẃẄẅẆẇẈẉẊẋẌẍẎẏẐẑẒẓẔẕẖẗẘẙẚẛẜẝẞẟẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾế";
-                s+= "ỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹỺỻỼỽỾỿ";
-                ident = "Base256";
-            }
-            break;
-        case 188:
-            for (i=0; i<94; i++) s += String.fromCharCode(33+i);
-            for (i=0; i<95; i++) s += String.fromCharCode(161+i);
-            s = s.replace(String.fromCharCode(173),''); // soft-hyphen isn't graphical
-            ident = "Base188";
-            break;
-        case 94:
-            for (i=0; i<94; i++) { s += String.fromCharCode(33+i); }
-            ident = "Base94";
-            break;
-        case 85:
-            s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&()*+-;<=>?@^_`{|}~";
-            ident = "Base85";
-            break;
-        case 64:
-            s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	    if ((args.indexOf("--url-safe") != -1) || (args.indexOf("-u") != -1)) {
-                s += "-_";
-                ident = "Base64 (URL-safe)";
-	    }
-            else {
-                s += "+/";
-                ident = "Base64";
-            }
-            break;
-        case 62:
-            s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            ident = "Base62";
-            break;
-        case 58:
-            s = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-            ident = "Base58 (Bitcoin)";
-            break;
-        case 52:
-            s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            ident = "Base52";
-            break;
-        case 36:
-            s = "0123456789abcdefghijklmnopqrstuvwxyz";
-            ident = "Base36";
-            break;
-        case 32:
-            s = "0123456789abcdefghjkmnpqrstvwxyz";
-            ident = "Base32";
-            break;
-        case 26:
-            s = "abcdefghjkmnpqrstvwxyz";
-            ident = "Base26";
-            break;
-        case 16:
-            s = "0123456789abcdef";
-            ident = "Base16";
-            break;
-        case 10:
-            s = "0123456789";
-            ident = "Base10";
-            break;
-        case 8:
-            s = "01234567";
-            ident = "Base8";
-            break;
-        case 4:
-            s = "ACGT";
-            ident = "DNA";
-            break;
-        case 2:
-            if ((rand_set == "Coins") || (rand_set == "coins")) {
-                s = "HT";
-                ident = "Coin_flips";
-            }
-            else {
-                s = "01";
-                ident = "Base2";
-            }
-            break;
-    }
+function generateSet (b, randSet) {
+  randSet = typeof randSet !== 'undefined' ? randSet : true
+  const entropy = getEntropy()
+  const assocArr = {}
+  let ident = ''
+  let s = ''
+  switch (b) {
+    case 256:
+      if ((args.indexOf('--braille') !== -1) || (args.indexOf('-R') !== -1)) {
+        s = '⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿'
+        s += '⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿'
+        s += '⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿'
+        s += '⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿'
+        ident = 'Braille'
+      } else {
+        s = 'ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔḕḖḗḘḙḚḛḜḝḞḟḠḡḢḣḤḥḦḧḨḩḪḫḬḭḮḯḰḱḲḳḴḵḶḷḸḹḺḻḼḽḾḿ'
+        s += 'ṀṁṂṃṄṅṆṇṈṉṊṋṌṍṎṏṐṑṒṓṔṕṖṗṘṙṚṛṜṝṞṟṠṡṢṣṤṥṦṧṨṩṪṫṬṭṮṯṰṱṲṳṴṵṶṷṸṹṺṻṼṽṾṿ'
+        s += 'ẀẁẂẃẄẅẆẇẈẉẊẋẌẍẎẏẐẑẒẓẔẕẖẗẘẙẚẛẜẝẞẟẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾế'
+        s += 'ỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹỺỻỼỽỾỿ'
+        ident = 'Latin Extended'
+      }
+      break
+    case 188:
+      for (let i = 0; i < 94; i++) s += String.fromCharCode(33 + i)
+      for (let i = 0; i < 95; i++) s += String.fromCharCode(161 + i)
+      s = s.replace(String.fromCharCode(173), '') // soft-hyphen isn't graphical
+      ident = 'ISO 8859-1'
+      break
+    case 94:
+      for (let i = 0; i < 94; i++) { s += String.fromCharCode(33 + i) }
+      ident = 'Base94'
+      break
+    case 85:
+      s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&()*+-;<=>?@^_`{|}~'
+      ident = 'Base85'
+      break
+    case 64:
+      s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'
+      ident = 'Base64'
+      break
+    case 62:
+      s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+      ident = 'Base62'
+      break
+    case 58:
+      s = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+      ident = 'Base58'
+      break
+    case 52:
+      s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      ident = 'Base52'
+      break
+    case 36:
+      s = '0123456789abcdefghijklmnopqrstuvwxyz'
+      ident = 'Base36'
+      break
+    case 32:
+      s = '0123456789abcdefghjkmnpqrstvwxyz'
+      ident = 'Base32'
+      break
+    case 26:
+      s = 'abcdefghjkmnpqrstvwxyz'
+      ident = 'Base26'
+      break
+    case 16:
+      s = '0123456789abcdef'
+      ident = 'Base16'
+      break
+    case 10:
+      s = '0123456789'
+      ident = 'Base10'
+      break
+    case 8:
+      s = '01234567'
+      ident = 'Base8'
+      break
+    case 4:
+      s = 'ACGT'
+      ident = 'DNA'
+      break
+    case 2:
+      if ((randSet === 'Coins') || (randSet === 'coins')) {
+        s = 'HT'
+        ident = 'Coin Flips'
+      } else {
+        s = '01'
+        ident = 'Base2'
+      }
+      break
+  }
 
-    var len = Math.ceil(entropy/Math.log2(s.length));
-    var pass = generate_pass(len, s);
-    assoc_arr["Generator"] = "Random";
-    assoc_arr["Wordlist"] = ident;
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = len;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(s.length));
-    return assoc_arr;
+  const len = Math.ceil(entropy / Math.log2(s.length))
+  const pass = generatePass(len, s)
+  assocArr.Generator = 'Random'
+  assocArr.Wordlist = ident
+  assocArr.Password = pass
+  assocArr.Characters = len
+  assocArr.Entropy = Math.floor(len * Math.log2(s.length))
+  return assocArr
 }
 
-function generate_random() {
-    var s = "";
-    if (args.indexOf("--random") != -1) {
-        var rand_set = args[args.indexOf("--random") + 1];
-    }
-    else if (args.indexOf("-r") != -1) {
-        var rand_set = args[args.indexOf("-r") + 1];
-    }
-    else {
-        var rand_set = "Base94";
-    }
-    switch(rand_set) {
-        case "Base256":
-        case "base256":
-        case "256":
-            s = generate_set(256);
-            break;
-        case "Base188":
-        case "base188":
-        case "188":
-            s = generate_set(188);
-            break;
-        case "Base94":
-        case "base94":
-        case "94":
-            s = generate_set(94);
-            break;
-        case "Base85":
-        case "base85":
-        case "85":
-            s = generate_set(85);
-            break;
-        case "Base64":
-        case "base64":
-        case "64":
-            s = generate_set(64);
-            break;
-        case "Base62":
-        case "base62":
-        case "62":
-            s = generate_set(62);
-            break;
-        case "Base58":
-        case "base58":
-        case "58":
-            s = generate_set(58);
-            break;
-        case "Base52":
-        case "base52":
-        case "52":
-            s = generate_set(52);
-            break;
-        case "Base36":
-        case "base36":
-        case "36":
-            s = generate_set(36);
-            break;
-        case "Base32":
-        case "base32":
-        case "32":
-            s = generate_set(32);
-            break;
-        case "Base26":
-        case "base26":
-        case "26":
-            s = generate_set(26);
-            break;
-        case "Base16":
-        case "base16":
-        case "16":
-            s = generate_set(16);
-            break;
-        case "Base10":
-        case "base10":
-        case "10":
-            s = generate_set(10);
-            break;
-        case "Base8":
-        case "base8":
-        case "8":
-            s = generate_set(8);
-            break;
-        case "Base2":
-        case "base2":
-        case "Coins":
-        case "coins":
-        case "2":
-            s = generate_set(2, rand_set);
-            break;
-        case "DNA":
-        case "dna":
-            s = generate_set(4);
-            break;
-        case "Emoji":
-        case "emoji":
-            s = generate_emoji();
-            break;
-        default:
-            console.log("Unknown set: " + rand_set);
-            process.exit(1);
-    }
-    return s;
+function generateRandom () {
+  let s = ''
+  let randSet
+  if (args.indexOf('--random') !== -1) {
+    randSet = args[args.indexOf('--random') + 1]
+  } else if (args.indexOf('-r') !== -1) {
+    randSet = args[args.indexOf('-r') + 1]
+  } else {
+    randSet = 'Base94'
+  }
+  switch (randSet) {
+    case 'Base256':
+    case 'base256':
+    case '256':
+      s = generateSet(256)
+      break
+    case 'Base188':
+    case 'base188':
+    case '188':
+      s = generateSet(188)
+      break
+    case 'Base94':
+    case 'base94':
+    case '94':
+      s = generateSet(94)
+      break
+    case 'Base85':
+    case 'base85':
+    case '85':
+      s = generateSet(85)
+      break
+    case 'Base64':
+    case 'base64':
+    case '64':
+      s = generateSet(64)
+      break
+    case 'Base62':
+    case 'base62':
+    case '62':
+      s = generateSet(62)
+      break
+    case 'Base58':
+    case 'base58':
+    case '58':
+      s = generateSet(58)
+      break
+    case 'Base52':
+    case 'base52':
+    case '52':
+      s = generateSet(52)
+      break
+    case 'Base36':
+    case 'base36':
+    case '36':
+      s = generateSet(36)
+      break
+    case 'Base32':
+    case 'base32':
+    case '32':
+      s = generateSet(32)
+      break
+    case 'Base26':
+    case 'base26':
+    case '26':
+      s = generateSet(26)
+      break
+    case 'Base16':
+    case 'base16':
+    case '16':
+      s = generateSet(16)
+      break
+    case 'Base10':
+    case 'base10':
+    case '10':
+      s = generateSet(10)
+      break
+    case 'Base8':
+    case 'base8':
+    case '8':
+      s = generateSet(8)
+      break
+    case 'Base2':
+    case 'base2':
+    case 'Coins':
+    case 'coins':
+    case '2':
+      s = generateSet(2, randSet)
+      break
+    case 'DNA':
+    case 'dna':
+      s = generateSet(4)
+      break
+    case 'Emoji':
+    case 'emoji':
+      s = generateEmoji()
+      break
+    default:
+      console.log('Unknown set: ' + randSet)
+      process.exit(1)
+  }
+  return s
 }
 
-function generate_emoji() {
-    const emoji_wordlist = require('./lists/random_emoji');
-    var wordlist = emoji_wordlist.wordlist;
-    var entropy = get_entropy();
-    var assoc_arr = {};
-    var len = Math.ceil(entropy/Math.log2(wordlist.length));
-    var pass = generate_pass(len, wordlist, true);
-    pass = pass.replace(/ /g,"");
-    assoc_arr["Generator"] = "Random";
-    assoc_arr["Wordlist"] = "Emoji";
-    assoc_arr["Password"] = pass;
-    assoc_arr["Characters"] = len;
-    assoc_arr["Entropy"] = Math.floor(len * Math.log2(wordlist.length));
-    return assoc_arr;
+function generateEmoji () {
+  const emojiWordlist = require('./lists/random_emoji')
+  const wordlist = emojiWordlist.wordlist
+  const entropy = getEntropy()
+  const assocArr = {}
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+  let pass = generatePass(len, wordlist, true)
+  pass = pass.replace(/ /g, '')
+  assocArr.Generator = 'Random'
+  assocArr.Wordlist = 'Emoji'
+  assocArr.Password = pass
+  assocArr.Characters = len
+  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  return assocArr
 }
 
-if ((args.indexOf("--help") != -1) || (args.indexOf("-h")) != -1) {
-    print_usage();
+if ((args.indexOf('--help') !== -1) || (args.indexOf('-h')) !== -1) {
+  printUsage()
 }
 
-if (args.indexOf("--only") != -1) {
-    var generator = args[args.indexOf("--only") + 1];
-}
-else if (args.indexOf("-o") != -1) {
-    var generator = args[args.indexOf("-o") + 1];
+if (args.indexOf('--only') !== -1) {
+  generator = args[args.indexOf('--only') + 1]
+} else if (args.indexOf('-o') !== -1) {
+  generator = args[args.indexOf('-o') + 1]
 }
 if (generator !== undefined && generator !== null) {
-    switch(generator) {
-        case "Alternate":
-        case "alternate":
-            results.push(generate_alternate());
-            break;
-        case "Bitcoin":
-        case "bitcoin":
-            results.push(generate_bitcoin());
-            break;
-        case "Diceware":
-        case "diceware":
-            results.push(generate_diceware());
-            break;
-        case "EFF":
-        case "Eff":
-        case "eff":
-            results.push(generate_eff());
-            break;
-        case "DiceKey":
-        case "dicekey":
-            results.push(generate_dicekey());
-            break;
-        case "System":
-        case "system":
-            results.push(generate_sys_pass());
-            break;
-        case "Pseudowords":
-        case "pseudowords":
-        case "Pseudoword":
-        case "pseudoword":
-        case "Pseudo":
-        case "pseudo":
-            results.push(generate_pseudowords());
-            break;
-        case "Random":
-        case "random":
-            results.push(generate_random());
-            break;
-        default:
-            console.log("Unknown generator: " + args[args.indexOf("--only") + 1])
-            process.exit(1);
-    }
-}
-else {
-    results.push(generate_alternate());
-    results.push(generate_bitcoin());
-    results.push(generate_diceware());
-    results.push(generate_eff());
-    if ((args.indexOf("--system") != -1) || (args.indexOf("-s") != -1)) {
-        results.push(generate_sys_pass());
-    }
-    results.push(generate_pseudowords());
-    results.push(generate_random());
-    if ((args.indexOf("--dicekey") != -1) || (args.indexOf("-D") != -1)) {
-        results.push(generate_dicekey());
-    }
+  switch (generator) {
+    case 'Alternate':
+    case 'alternate':
+      results.push(generateAlternate())
+      break
+    case 'Bitcoin':
+    case 'bitcoin':
+      results.push(generateBitcoin())
+      break
+    case 'Diceware':
+    case 'diceware':
+      results.push(generateDiceware())
+      break
+    case 'EFF':
+    case 'Eff':
+    case 'eff':
+      results.push(generateEff())
+      break
+    case 'DiceKey':
+    case 'dicekey':
+      results.push(generateDicekey())
+      break
+    case 'System':
+    case 'system':
+      results.push(generateSysPass())
+      break
+    case 'Pseudowords':
+    case 'pseudowords':
+    case 'Pseudoword':
+    case 'pseudoword':
+    case 'Pseudo':
+    case 'pseudo':
+      results.push(generatePseudowords())
+      break
+    case 'Random':
+    case 'random':
+      results.push(generateRandom())
+      break
+    default:
+      console.log('Unknown generator: ' + args[args.indexOf('--only') + 1])
+      process.exit(1)
+  }
+} else {
+  results.push(generateAlternate())
+  results.push(generateBitcoin())
+  results.push(generateDiceware())
+  results.push(generateEff())
+  if ((args.indexOf('--system') !== -1) || (args.indexOf('-s') !== -1)) {
+    results.push(generateSysPass())
+  }
+  results.push(generatePseudowords())
+  results.push(generateRandom())
+  if ((args.indexOf('--dicekey') !== -1) || (args.indexOf('-D') !== -1)) {
+    results.push(generateDicekey())
+  }
 }
 
-if ((args.indexOf("--json") != -1) || (args.indexOf("-j")) != -1) {
-    var json_ret = JSON.stringify(results, null, 2);
-    console.log(json_ret);
-}
-else {
-    for (var i=0; i<results.length; i++) {
-        console.log(results[i].Generator + "(" + results[i].Wordlist + "): " + results[i].Password);
-    }
+if ((args.indexOf('--json') !== -1) || (args.indexOf('-j')) !== -1) {
+  const jsonRet = JSON.stringify(results, null, null)
+  console.log(jsonRet)
+} else {
+  for (let i = 0; i < results.length; i++) {
+    console.log(results[i].Generator + '(' + results[i].Wordlist + '): ' + results[i].Password)
+  }
 }
