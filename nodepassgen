@@ -793,19 +793,19 @@ function generatePseudowords () {
   let pwType
   let ret
   if ((args.indexOf('--bubble') !== -1) || (args.indexOf('-B')) !== -1) {
-    pwType = 'Bubble_Babble'
+    pwType = 'Bubble Babble'
   } else if ((args.indexOf('--ninja') !== -1) || (args.indexOf('-n')) !== -1) {
-    pwType = 'Secret_Ninja'
+    pwType = 'Secret Ninja'
   } else if ((args.indexOf('--kpop') !== -1) || (args.indexOf('-k')) !== -1) {
-    pwType = 'Korean_K-pop'
+    pwType = 'Korean K-pop'
   } else {
-    pwType = 'Apple_Inc'
+    pwType = 'Apple Inc'
   }
-  if (pwType === 'Apple_Inc') {
+  if (pwType === 'Apple Inc') {
     ret = generateApple()
-  } else if (pwType === 'Secret_Ninja') {
+  } else if (pwType === 'Secret Ninja') {
     ret = generateNinja()
-  } else if (pwType === 'Korean_K-pop') {
+  } else if (pwType === 'Korean K-pop') {
     ret = generateKpop()
   } else {
     ret = generateBabble()
