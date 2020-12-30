@@ -27,11 +27,11 @@ Options are:
                                    LANGUAGE must be one of:
                                      Basque, Beale, Bulgarian, Catalan, Chinese,
                                      Czech, Danish, Dutch, English, Esperanto,
-                                     Estonian, Finnish, French, German, Hebrew,
-                                     Hungarian, Italian, Japanese, Latin, Maori,
-                                     Norwegian, Polish, Portuguese, Romanian,
-                                     Russian, Slovak, Slovenian, Spanish, Swedish,
-                                     Turkish
+                                     Estonian, Finnish, French, German, Greek,
+                                     Hebrew, Hungarian, Italian, Japanese, Latin,
+                                     Maori, Norwegian, Polish, Portuguese,
+                                     Romanian, Russian, Slovak, Slovenian, Spanish
+                                     Swedish, Turkish
       -D, --dicekey              Generate a hard-coded 198-bit entropy text-based
                                    DiceKeys key. Format of the key is:
                                    <character><side><orientation> where:
@@ -61,7 +61,6 @@ Options are:
       -s, --system               Use /usr/share/dict/words for the passphrase.
                                    NOTE: larger word lists have more obscure words.
       -t, --traditional          Use Traditional Chinese with Bitcoin.
-
     
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:

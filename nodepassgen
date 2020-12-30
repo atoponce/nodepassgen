@@ -26,11 +26,11 @@ function printUsage () {
   console.log('                               LANGUAGE must be one of:')
   console.log('                                 Basque, Beale, Bulgarian, Catalan, Chinese,')
   console.log('                                 Czech, Danish, Dutch, English, Esperanto,')
-  console.log('                                 Estonian, Finnish, French, German, Hebrew,')
-  console.log('                                 Hungarian, Italian, Japanese, Latin, Maori,')
-  console.log('                                 Norwegian, Polish, Portuguese, Romanian,')
-  console.log('                                 Russian, Slovak, Slovenian, Spanish, Swedish,')
-  console.log('                                 Turkish')
+  console.log('                                 Estonian, Finnish, French, German, Greek,')
+  console.log('                                 Hebrew, Hungarian, Italian, Japanese, Latin,')
+  console.log('                                 Maori, Norwegian, Polish, Portuguese,')
+  console.log('                                 Romanian, Russian, Slovak, Slovenian, Spanish')
+  console.log('                                 Swedish, Turkish')
   console.log('  -D, --dicekey              Generate a hard-coded 198-bit entropy text-based')
   console.log('                               DiceKeys key. Format of the key is:')
   console.log('                               <character><side><orientation> where:')
@@ -214,6 +214,13 @@ function generateDiceware () {
       const dicewareGerman = require('./lists/dicewareGerman')
       wordlist = dicewareGerman.wordlist
       lang = 'German'
+      break
+    }
+    case 'Greek':
+    case 'greek': {
+      const dicewareGreek = require('./lists/dicewareGreek')
+      wordlist = dicewareGreek.wordlist
+      lang = 'Greek'
       break
     }
     case 'Hebrew':
