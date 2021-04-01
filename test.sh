@@ -1,14 +1,19 @@
 #!/bin/bash
+### Sanity checks to make sure everything works without error
 
 # Alternate tests
 ./nodepassgen -o alternate -a colors
 ./nodepassgen -o alternate -a elvish
+./nodepassgen -o alternate -a english
 ./nodepassgen -o alternate -a klingon
 ./nodepassgen -o alternate -a pgp
+./nodepassgen -o alternate -a pokerware
 ./nodepassgen -o alternate -a rockyou
 ./nodepassgen -o alternate -a simpsons
+./nodepassgen -o alternate -a skey
 ./nodepassgen -o alternate -a trump
 ./nodepassgen -o alternate -a colors -H
+printf '\n' # blank line
 
 # Bitcoin tests
 ./nodepassgen -o bitcoin -b chinese
@@ -21,6 +26,7 @@
 ./nodepassgen -o bitcoin -b spanish
 ./nodepassgen -o bitcoin -b portuguese
 ./nodepassgen -o bitcoin -b english -H
+printf '\n' # blank line
 
 # Diceware tests
 ./nodepassgen -o diceware -d Basque
@@ -44,6 +50,7 @@
 ./nodepassgen -o diceware -d Japanese
 ./nodepassgen -o diceware -d Latin
 ./nodepassgen -o diceware -d Maori
+./nodepassgen -o diceware -d NLP
 ./nodepassgen -o diceware -d Norwegian
 ./nodepassgen -o diceware -d Polish
 ./nodepassgen -o diceware -d Portuguese
@@ -55,6 +62,7 @@
 ./nodepassgen -o diceware -d Swedish
 ./nodepassgen -o diceware -d Turkish
 ./nodepassgen -o diceware -d English -H
+printf '\n' # blank line
 
 # EFF tests
 ./nodepassgen -o eff -e distant
@@ -65,15 +73,21 @@
 ./nodepassgen -o eff -e trek
 ./nodepassgen -o eff -e wars
 ./nodepassgen -o eff -e short -H
+printf '\n' # blank line
 
 # Pseudowords tests
-./nodepassgen -o pseudowords # bubble babble by default - also, no option. fix?
-./nodepassgen -o pseudowords -k
-./nodepassgen -o pseudowords -n
+./nodepassgen -o pseudowords -p apple
+./nodepassgen -o pseudowords -p babble
+./nodepassgen -o pseudowords -p k-pop
+./nodepassgen -o pseudowords -p ninja
+printf '\n' # blank line
 
-# Random tests
+# /usr/share/dict/words tests
 ./nodepassgen -o system -s
 ./nodepassgen -o system -s -H
+printf '\n' # blank line
+
+# Random tests
 ./nodepassgen -o random -r Base256
 ./nodepassgen -o random -r Base256 -R
 ./nodepassgen -o random -r Base188
@@ -93,6 +107,7 @@
 ./nodepassgen -o random -r Coins
 ./nodepassgen -o random -r DNA
 ./nodepassgen -o random -r Emoji
+printf '\n' # blank line
 
 # Entropy tests
 ./nodepassgen -o alternate -a trump -m 128 -H
@@ -102,6 +117,11 @@
 ./nodepassgen -o pseudowords -k -m 128 -H
 ./nodepassgen -o system -s -m 128 -H
 ./nodepassgen -o random -r Coins -m 128
+printf '\n' # blank line
+
+# DiceKey test
+./nodepassgen -o dicekeys -D
+printf '\n' # blank line
 
 # JSON tests
 ./nodepassgen -j

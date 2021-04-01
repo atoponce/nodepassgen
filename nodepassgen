@@ -7,54 +7,59 @@ const results = []
 const args = process.argv
 
 function printUsage () {
-  console.log('Usage: node main.js [OPTION [ARG]]...')
+  console.log('Usage: nodepassgen [OPTION [ARG]]...')
   console.log('NOTE: A Unicode font may be needed to view some of the passwords correctly.')
   console.log('  -h, --help                 Print this help and exit.')
   console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
   console.log('                               WORDLIST must be one of:')
-  console.log('                                 Deseret, Colors, Elvish, Klingon, PGP,')
-  console.log('                                 Rockyou, Shavian, Simpsons, Trump')
+  console.log('                                 Deseret, Colors, Elvish, English, Klingon,')
+  console.log('                                 PGP, Pokerware, Rockyou, Shavian, Simpsons,')
+  console.log('                                 S/KEY, Trump.')
+  console.log('                               NOTE: "English" combines every English word list.')
   console.log('  -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.')
   console.log('                               LANGUAGE must be one of:')
   console.log('                                Chinese, Czech, English, French, Italian,')
-  console.log('                                Japanese, Korean, Portuguese')
+  console.log('                                Japanese, Korean, Portuguese.')
   console.log('                               NOTE: Simplified Chinese is the default Chinese')
   console.log('                               character set. If you want to use Traditional')
   console.log('                               Chinese, use --traditional.')
-  console.log('  -B, --bubble               Choose Bubble Babble encoding.')
   console.log('  -d, --diceware LANGUAGE    Choose a Diceware language. Default is English.')
   console.log('                               LANGUAGE must be one of:')
   console.log('                                 Basque, Beale, Bulgarian, Catalan, Chinese,')
   console.log('                                 Czech, Danish, Dutch, English, Esperanto,')
   console.log('                                 Estonian, Finnish, French, German, Greek,')
   console.log('                                 Hebrew, Hungarian, Italian, Japanese, Latin,')
-  console.log('                                 Maori, Norwegian, Polish, Portuguese,')
+  console.log('                                 Maori, NLP, Norwegian, Polish, Portuguese,')
   console.log('                                 Romanian, Russian, Slovak, Slovenian, Spanish')
-  console.log('                                 Swedish, Turkish')
+  console.log('                                 Swedish, Turkish.')
+  console.log('                               NOTE: NLP is "Natural Language Passwords".')
   console.log('  -D, --dicekey              Generate a hard-coded 198-bit entropy text-based')
   console.log('                               DiceKeys key. Format of the key is:')
   console.log('                               <character><side><orientation> where:')
   console.log('                                 <character>: Shuffled A-Z without Q ')
   console.log('                                      <side>: Random side 1-6 of the die')
-  console.log('                               <orientation>: Random N,E,S,W cardinal direction')
+  console.log('                               <orientation>: Random t,r,b,l direction')
   console.log('  -e, --eff WORDLIST         Choose an EFF wordlist. Default is Short.')
   console.log('                               WORDLIST must be one of:')
-  console.log('                                 Distant, Long, Potter, Short, Trek, Wars.')
-  console.log('  -H, --hyphenate            Hyphenate Diceware, EFF, & Alternate passphrases.')
+  console.log('                                 Distant, Long, Potter, Short, Thrones, Trek,')
+  console.log('                                 Wars.')
+  console.log('  -H, --hyphenate            Hyphenate Alternate, Bitcoin, Diceware, EFF, and')
+  console.log('                               system passphrases.')
   console.log('  -j, --json                 Output the passwords and meta in JSON format.')
-  console.log('  -k, --kpop                 Choose Korean K-pop words.')
   console.log('  -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.')
-  console.log('  -n, --ninja                Choose Secret Ninja encoding.')
   console.log('  -o, --only GENERATOR       Choose a generator instead of printing all six.')
   console.log('                               GENERATOR must be one of:')
   console.log('                                 Alternate, Bitcoin, Diceware, EFF,')
-  console.log('                                 Pseudowords, Random, System')
-  console.log('  -r, --random SET           Choose from a string set. Default is Base94')
+  console.log('                                 Pseudowords, Random, System.')
+  console.log('  -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.')
+  console.log('                               OPTION must be one of:')
+  console.log('                                 Apple, Babble, K-pop, Ninja.')
+  console.log('  -r, --random SET           Choose from a string set. Default is Base94.')
   console.log('                               SET must be one of:')
   console.log('                                 Base256, Base188, Base94, Base85, Base64,')
   console.log('                                 Base62, Base58, Base52, Base36, Base32,')
   console.log('                                 Base26, Base16, Base10, Base8, Base2, Coins,')
-  console.log('                                 DNA, Emoji')
+  console.log('                                 DNA, Emoji.')
   console.log('                               NOTE: Braile Base256, use -R, --braille.')
   console.log('  -R, --braille              Use Braille patterns for Base256.')
   console.log('  -s, --system               Use /usr/share/dict/words for the passphrase.')
@@ -73,7 +78,7 @@ function getEntropy () {
     return 70
   }
   if (entropy < 55) {
-    console.log('Entropy value too low. Must be at least 55-bits.')
+    console.log('Security value too low. Must be at least 55-bits.')
     process.exit(1)
   } else {
     return entropy
@@ -88,6 +93,10 @@ function secRand (count) {
     rand = parseInt(crypto.randomBytes(4).toString('hex'), 16)
   } while (rand < min)
   return rand % count
+}
+
+function uniquesOnly (list) {
+  return [...new Set(list)] // enforce unique elements in array
 }
 
 function generatePass (len, set, spaces) {
@@ -265,6 +274,13 @@ function generateDiceware () {
       lang = 'Maori'
       break
     }
+    case 'NLP':
+    case 'nlp': {
+      const dicewareNLP = require('./lists/dicewareNLP')
+      wordlist = dicewareNLP.wordlist
+      lang = 'NLP'
+      break
+    }
     case 'Norwegian':
     case 'norwegian': {
       const dicewareNorwegian = require('./lists/dicewareNorwegian')
@@ -340,10 +356,40 @@ function generateDiceware () {
       process.exit(1)
     }
   }
+  wordlist = uniquesOnly(wordlist)
   const assocArr = {}
   const entropy = getEntropy()
-  const len = Math.ceil(entropy / Math.log2(wordlist.length))
-  let pass = generatePass(len, wordlist, true)
+  let pass = ''
+  let len = 0
+  if (wordlist.filter(Array.isArray).length === 2) {
+    // We're working on the "Natrual Language Passwords" list
+    const len1 = Math.ceil(entropy / Math.log2(wordlist[0].length)) // adjectives
+    const len2 = Math.ceil(entropy / Math.log2(wordlist[1].length)) // nouns
+    const adjs = generatePass(len1, wordlist[0], true).split(" ")
+    const nouns = generatePass(len2, wordlist[1], true).split(" ")
+    let bits = 0
+    let counter = 0
+    len = len1 + len2
+    // building up the password alteraning: adj-noun-adj-noun-...
+    while (bits <= entropy) {
+      if (counter % 2 === 0) {
+        pass += adjs[counter]
+        bits += Math.log2(wordlist[0].length)
+      }
+      else {
+        pass += nouns[counter]
+        bits += Math.log2(wordlist[1].length)
+      }
+      pass += ' '
+      counter++
+    }
+    pass = pass.trim()
+  }
+  else {
+    // Every other Diceware word list.
+    len = Math.ceil(entropy / Math.log2(wordlist.length))
+    pass = generatePass(len, wordlist, true)
+  }
   if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
     pass = pass.split(' ').join('-')
   }
@@ -420,6 +466,7 @@ function generateEff () {
       process.exit()
     }
   }
+  wordlist = uniquesOnly(wordlist)
   const assocArr = {}
   const entropy = getEntropy()
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
@@ -448,66 +495,127 @@ function generateAlternate () {
   switch (altSet) {
     case 'Deseret':
     case 'deseret': {
-      const deseretWordlist = require('./lists/alternateDeseret')
-      wordlist = deseretWordlist.wordlist
+      const alternateDeseret = require('./lists/alternateDeseret')
+      wordlist = alternateDeseret.wordlist
       altSet = 'Deseret'
       break
     }
     case 'Colors':
     case 'colors': {
-      const colorsWordlist = require('./lists/alternateColors')
-      wordlist = colorsWordlist.wordlist
+      const alternateColors = require('./lists/alternateColors')
+      wordlist = alternateColors.wordlist
       altSet = 'Colors'
       break
     }
     case 'Elvish':
     case 'elvish': {
-      const elvishWordlist = require('./lists/alternateElvish')
-      wordlist = elvishWordlist.wordlist
+      const alternateElvish = require('./lists/alternateElvish')
+      wordlist = alternateElvish.wordlist
       altSet = 'Elvish'
+      break
+    }
+    case 'English':
+    case 'english': {
+      // Do not include /usr/share/dict/words as it may not be English
+      const alternateColors = require('./lists/alternateColors')
+      const alternatePgp = require('./lists/alternatePgp')
+      const alternatePokerware = require('./lists/alternatePokerware')
+      const alternateRockyou = require('./lists/alternateRockyou')
+      const alternateSimpsons = require('./lists/alternateSimpsons')
+      const alternateSkey = require('./lists/alternateSkey')
+      const alternateTrump = require('./lists/alternateTrump')
+      const bitcoinEnglish = require('./lists/bitcoinEN')
+      const dicewareBeale = require('./lists/dicewareBeale')
+      const dicewareEnglish = require('./lists/dicewareEnglish')
+      const dicewareNLP = require('./lists/dicewareNLP')
+      const effDistant = require('./lists/effDistant')
+      const effLong = require('./lists/effLong')
+      const effHarryPotter = require('./lists/effHarryPotter')
+      const effShort = require('./lists/effShort')
+      const effGameOfThrones = require('./lists/effGameOfThrones')
+      const effStarTrek = require('./lists/effStarTrek')
+      const effStarWars = require('./lists/effStarWars')
+      wordlist = alternateColors.wordlist                     // 1029 words
+      wordlist = wordlist.concat(alternatePgp.wordlist)       //  512 words
+      wordlist = wordlist.concat(alternatePokerware.wordlist) // 5304 words
+      wordlist = wordlist.concat(alternateRockyou.wordlist)   // 7776 words
+      wordlist = wordlist.concat(alternateSimpsons.wordlist)  // 5000 words
+      wordlist = wordlist.concat(alternateSkey.wordlist)      // 2048 words
+      wordlist = wordlist.concat(alternateTrump.wordlist)     // 8192 words
+      wordlist = wordlist.concat(bitcoinEnglish.wordlist)     // 2048 words
+      wordlist = wordlist.concat(dicewareEnglish.wordlist)    // 8192 words
+      wordlist = wordlist.concat(dicewareBeale.wordlist)      // 7776 words
+      wordlist = wordlist.concat(dicewareNLP.wordlist[0])     // 1296 words
+      wordlist = wordlist.concat(dicewareNLP.wordlist[1])     // 7776 words
+      wordlist = wordlist.concat(effDistant.wordlist)         // 1296 words
+      wordlist = wordlist.concat(effGameOfThrones.wordlist)   // 4000 words
+      wordlist = wordlist.concat(effHarryPotter.wordlist)     // 4000 words
+      wordlist = wordlist.concat(effLong.wordlist)            // 4000 words
+      wordlist = wordlist.concat(effShort.wordlist)           // 1296 words
+      wordlist = wordlist.concat(effStarTrek.wordlist)        // 4000 words
+      wordlist = wordlist.concat(effStarWars.wordlist)        // 4000 words
+      altSet = 'English (All)'
       break
     }
     case 'Klingon':
     case 'klingon': {
-      const klingonWordlist = require('./lists/alternateKlingon')
-      wordlist = klingonWordlist.wordlist
+      const alternateKlingon = require('./lists/alternateKlingon')
+      wordlist = alternateKlingon.wordlist
       altSet = 'Klingon'
       break
     }
     case 'PGP':
     case 'Pgp':
     case 'pgp': {
-      const pgpWordlist = require('./lists/alternatePgp')
-      wordlist = pgpWordlist.wordlist
+      const alternatePgp = require('./lists/alternatePgp')
+      wordlist = alternatePgp.wordlist
       altSet = 'PGP'
+      break
+    }
+    case 'Pokerware':
+    case 'pokerware': {
+      const alternatePokerware = require('./lists/alternatePokerware')
+      wordlist = alternatePokerware.wordlist
+      altSet = 'Pokerware'
       break
     }
     case 'Rockyou':
     case 'RockYou':
     case 'rockyou': {
-      const rockyouWordlist = require('./lists/alternateRockyou')
-      wordlist = rockyouWordlist.wordlist
+      const alternateRockyou = require('./lists/alternateRockyou')
+      wordlist = alternateRockyou.wordlist
       altSet = 'RockYou'
       break
     }
     case 'Shavian':
     case 'shavian': {
-      const shavianWordlist = require('./lists/alternateShavian')
-      wordlist = shavianWordlist.wordlist
+      const alternateShavian = require('./lists/alternateShavian')
+      wordlist = alternateShavian.wordlist
       altSet = 'Shavian'
       break
     }
     case 'Simpsons':
     case 'simpsons': {
-      const simpsonsWordlist = require('./lists/alternateSimpsons')
-      wordlist = simpsonsWordlist.wordlist
+      const alternateSimpsons = require('./lists/alternateSimpsons')
+      wordlist = alternateSimpsons.wordlist
       altSet = 'Simpsons'
+      break
+    }
+    case 'S/KEY':
+    case 'SKEY':
+    case 'S/Key':
+    case 'SKey':
+    case 's/key':
+    case 'skey': {
+      const alternateSkey = require('./lists/alternateSkey')
+      wordlist = alternateSkey.wordlist
+      altSet = 'S/KEY'
       break
     }
     case 'Trump':
     case 'trump': {
-      const trumpWordlist = require('./lists/alternateTrump')
-      wordlist = trumpWordlist.wordlist
+      const alternateTrump = require('./lists/alternateTrump')
+      wordlist = alternateTrump.wordlist
       altSet = 'Trump'
       break
     }
@@ -516,6 +624,7 @@ function generateAlternate () {
       process.exit(1)
     }
   }
+  wordlist = uniquesOnly(wordlist)
   const assocArr = {}
   const entropy = getEntropy()
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
@@ -616,6 +725,7 @@ function generateBitcoin () {
       process.exit(1)
     }
   }
+  wordlist = uniquesOnly(wordlist)
   const assocArr = {}
   const entropy = getEntropy()
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
@@ -642,7 +752,7 @@ function generateDicekey () {
     chars[i] = tmp
   }
   for (let i = 0; i < chars.length; i++) {
-    const dir = 'NESW'.split('')
+    const dir = 'trbl'.split('')
     pass += chars[i]
     pass += secRand(6) + 1
     pass += dir[secRand(4)]
@@ -661,7 +771,7 @@ function generateDicekey () {
 
 function generateSysPass () {
   const dict = fs.readFileSync('/usr/share/dict/words').toString()
-  const wordlist = dict.split('\n')
+  let wordlist = uniquesOnly(dict.split('\n'))
   const assocArr = {}
   const entropy = getEntropy()
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
@@ -742,7 +852,7 @@ function generateNinja () {
   let pass = ''
 
   for (let i = 0; i < len; i++) {
-    pass += ninja[secRand(len)]
+    pass += ninja[secRand(ninja.length)]
     if (i % 3 === 2 && i !== len - 1) {
       pass += '-'
     }
@@ -758,7 +868,7 @@ function generateKpop () {
   let pass = ''
 
   for (let i = 0; i < len; i++) {
-    pass += kpop[secRand(len)]
+    pass += kpop[secRand(kpop.length)]
     if (i % 2 === 1 && i !== len - 1) {
       pass += '-'
     }
@@ -797,32 +907,44 @@ function generateBabble () {
 }
 
 function generatePseudowords () {
-  let pwType
+  let pseudoSet
   let ret
-  if ((args.indexOf('--bubble') !== -1) || (args.indexOf('-B')) !== -1) {
-    pwType = 'Bubble Babble'
-  } else if ((args.indexOf('--ninja') !== -1) || (args.indexOf('-n')) !== -1) {
-    pwType = 'Secret Ninja'
-  } else if ((args.indexOf('--kpop') !== -1) || (args.indexOf('-k')) !== -1) {
-    pwType = 'Korean K-pop'
+  if (args.indexOf('--pseudowords') !== -1) {
+    pseudoSet = args[args.indexOf('--pseudowords') + 1]
+  } else if (args.indexOf('-p') !== -1) {
+    pseudoSet = args[args.indexOf('-p') + 1]
   } else {
-    pwType = 'Apple Inc'
+    pseudoSet = 'Apple'
   }
-  if (pwType === 'Apple Inc') {
-    ret = generateApple()
-  } else if (pwType === 'Secret Ninja') {
-    ret = generateNinja()
-  } else if (pwType === 'Korean K-pop') {
-    ret = generateKpop()
-  } else {
-    ret = generateBabble()
+  switch (pseudoSet) {
+    case 'Apple':
+    case 'apple': {
+      ret = generateApple()
+      break
+    }
+    case 'Babble':
+    case 'babble': {
+      ret = generateBabble()
+      break
+    }
+    case 'K-pop':
+    case 'k-pop':
+    case 'kpop': {
+      ret = generateKpop()
+      break
+    }
+    case 'Ninja':
+    case 'ninja': {
+      ret = generateNinja()
+      break
+    }
   }
   const assocArr = {}
   const pass = ret[0]
   const len = ret[1]
   const ent = ret[2]
   assocArr.Generator = 'Pseudowords'
-  assocArr.Wordlist = pwType
+  assocArr.Wordlist = pseudoSet
   assocArr.Password = pass
   assocArr.Characters = len
   assocArr.Entropy = ent
@@ -1035,7 +1157,7 @@ function generateRandom () {
 
 function generateEmoji () {
   const emojiWordlist = require('./lists/random_emoji')
-  const wordlist = emojiWordlist.wordlist
+  const wordlist = uniquesOnly(emojiWordlist.wordlist)
   const entropy = getEntropy()
   const assocArr = {}
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
@@ -1078,7 +1200,9 @@ if (generator !== undefined && generator !== null) {
       results.push(generateEff())
       break
     case 'DiceKey':
+    case 'DiceKeys':
     case 'dicekey':
+    case 'dicekeys':
       results.push(generateDicekey())
       break
     case 'System':
