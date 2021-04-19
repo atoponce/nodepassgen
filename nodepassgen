@@ -53,7 +53,7 @@ function printUsage () {
   console.log('                                 Pseudowords, Random, System.')
   console.log('  -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.')
   console.log('                               OPTION must be one of:')
-  console.log('                                 Apple, Babble, K-pop, Ninja.')
+  console.log('                                 Apple, Babble, Letterblock, Munemo, Proquints.')
   console.log('  -r, --random SET           Choose from a string set. Default is Base94.')
   console.log('                               SET must be one of:')
   console.log('                                 Base256, Base188, Base94, Base85, Base64,')
@@ -642,7 +642,10 @@ function generateAlternate () {
 
 function generateBitcoin () {
   let lang
+  let pass = ''
   let wordlist = []
+  let checksum = false
+
   if (args.indexOf('--bitcoin') !== -1) {
     lang = args[args.indexOf('--bitcoin') + 1]
   } else if (args.indexOf('-b') !== -1) {
@@ -726,10 +729,37 @@ function generateBitcoin () {
     }
   }
   wordlist = uniquesOnly(wordlist)
+
+  function _bytesToBinary (bytes) {
+    let total = BigInt(0)
+    for (let i = 0; i < bytes.length; i++) {
+      total |= BigInt(bytes[i] * 256 ** (bytes.length - i - 1))
+    }
+    return total.toString(2)
+  }
+
   const assocArr = {}
   const entropy = getEntropy()
+  const requiredEntropy = Math.ceil(entropy / 32) * 32 // Multiple of 32 bits, per the bip39 spec
+
+  const entropyBuffer = new Uint8Array(Math.ceil(requiredEntropy / 8))
+  for (let i = 0; i < entropyBuffer.length; i++) entropyBuffer[i] = secRand(256)
+
+  const digest = crypto.createHash('sha256').update(entropyBuffer).digest()
+  const entropyBits = _bytesToBinary(entropyBuffer).padStart(requiredEntropy, '0')
+  const checkBits = _bytesToBinary(digest).padStart(256, '0').substr(0, 11 - (requiredEntropy % 11))
+  const allBits = entropyBits + checkBits
+
+  const bitWords = allBits.match(/(.{1,11})/g)
+  const words = bitWords.map(function (binary) {
+    const index = parseInt(binary, 2)
+    return wordlist[index]
+  })
+
+  pass = words.join(' ')
+
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
-  let pass = generatePass(len, wordlist, true)
+
   if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
     pass = pass.split(' ').join('-')
   }
@@ -737,7 +767,8 @@ function generateBitcoin () {
   assocArr.Wordlist = lang
   assocArr.Password = pass
   assocArr.Characters = pass.replace(/\s/g, '').length
-  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+  assocArr.Entropy = requiredEntropy
+  assocArr.Checksum = true
   return assocArr
 }
 
@@ -845,68 +876,223 @@ function generateApple () {
   return [pass.join(''), pass.length, _apple(n)]
 }
 
-function generateNinja () {
-  const ninja = ['ka', 'zu', 'mi', 'te', 'ku', 'lu', 'ji', 'ri', 'ki', 'zu', 'me', 'ta', 'rin', 'to', 'mo', 'no', 'ke', 'shi', 'ari', 'chi', 'do', 'ru', 'mei', 'na', 'fu', 'zi']
-  const entropy = getEntropy()
-  const len = Math.ceil(entropy / Math.log2(ninja.length))
-  let pass = ''
-
-  for (let i = 0; i < len; i++) {
-    pass += ninja[secRand(ninja.length)]
-    if (i % 3 === 2 && i !== len - 1) {
-      pass += '-'
-    }
+function generateLetterblock () {
+  // https://www.draketo.de/software/letterblock-diceware
+  // Diverged from above with:
+  //  - '$' and '%' appended to make the checksum delimeters 6 characters
+  //  - Treating digits as leet-speak
+  function _isDigit (str) {
+    return str.length === 1 && str.match(/[0-9]/)
   }
-  return [pass, ninja.length, Math.floor(len * Math.log2(ninja.length))]
+
+  function _replaceDigit (str) {
+    if (str === '0') return 'o'
+    else if (str === '1') return 'l'
+    else if (str === '2') return 'z'
+    else if (str === '3') return 'e'
+    else if (str === '4') return 'a'
+    else if (str === '5') return 's'
+    else if (str === '6') return 'b'
+    else if (str === '7') return 't'
+    else if (str === '8') return 'b'
+    else if (str === '9') return 'g'
+  }
+
+  function _getCombos (arr, res, ctr) {
+    const ptr0 = ctr.toString(2).padStart(4, '0')[0]
+    const ptr1 = ctr.toString(2).padStart(4, '0')[1]
+    const ptr2 = ctr.toString(2).padStart(4, '0')[2]
+    const ptr3 = ctr.toString(2).padStart(4, '0')[3]
+
+    if (arr[0][ptr0] !== undefined && arr[1][ptr1] !== undefined && arr[2][ptr2] !== undefined && arr[3][ptr3] !== undefined) {
+      res.push(arr[0][ptr0] + arr[1][ptr1] + arr[2][ptr2] + arr[3][ptr3])
+    }
+
+    ctr++
+
+    if (ctr < 16) _getCombos(arr, res, ctr)
+  }
+
+  function _calculateScores (arr) {
+    let results = {}
+
+    for (let i = 0; i < arr.length; i++) {
+      let str = arr[i]
+      let score = 0
+
+      for (let j = 0; j < str.length - 1; j++) {
+        if (_isDigit(str[j])) score += bigrams[_replaceDigit(str[j]) + str[j + 1].toLowerCase()]
+        else if (_isDigit(str[j + 1])) score += bigrams[str[j].toLowerCase() + _replaceDigit(str[j + 1])]
+        else score += bigrams[str[j].toLowerCase() + str[j + 1].toLowerCase()]
+      }
+
+      results[str] = score
+    }
+
+    return Object.keys(results).reduce(function(a, b){ return results[a] > results[b] ? a : b })
+  }
+
+  const pseudoLetterblock = require('./lists/pseudoBigrams')
+  const bigrams = pseudoLetterblock.bigrams
+  const entropy = getEntropy()
+  const letters = [
+    ['1',  'A',  'J',  'a',  'h', 'px'],
+    ['26', 'BC', 'LR', 'bc', 'i', 'r'],
+    ['37', 'DH', 'N',  'd',  'j', 't'],
+    ['48', 'E',  'PX', 'e',  'k', 'u'],
+    ['59', 'FK', 'U',  'f',  'm', 'v'],
+    ['0',  'QM', 'VW', 'gq', 'o', 'w']
+  ]
+  const delimiters = '.+-=@%'
+  const blockEntropy = 4 * Math.floor(Math.log2(36))
+  const totalEntropy = Math.ceil(entropy / blockEntropy) * blockEntropy
+  const numBlocks = (totalEntropy / blockEntropy)
+  const blocks = []
+  const checks = []
+
+  let pw = ''
+
+  for (let i = 0; i < numBlocks; i++) {
+    const jail = []
+    const combos = []
+    let block = ''
+    let check = 0
+
+    for (let j = 0; j < 4; j++) {
+      const randNum = secRand(36)
+      const row = Math.floor(randNum / 6)
+      const col = randNum % 6
+
+      let cell = letters[row][col]
+      jail.push(cell)
+
+      check += (row + 1) // Indexed at 1 per the original proposal
+    }
+
+    _getCombos(jail, combos, 0)
+
+    let winner = _calculateScores(combos)
+
+    blocks.push(winner)
+    checks.push(check)
+  }
+
+  for (let i = 0; i < blocks.length; i++) {
+    pw += blocks[i]
+
+    if (checks[i + 1] !== undefined) pw += delimiters[(checks[i] + checks[i + 1]) % 6]
+  }
+
+  return [pw, pw.length, totalEntropy]
 }
 
-function generateKpop () {
-  // 64 unique words = 6 bits of entropy per word
-  const kpop = ['A', 'Ah', 'Bae', 'Bin', 'Bo', 'Choi', 'Chul', 'Da', 'Do', 'Dong', 'Eun', 'Gi', 'Gun', 'Ha', 'Hae', 'Hee', 'Ho', 'Hu', 'Hwa', 'Hwan', 'Hye', 'Hyo', 'Hyun', 'Il', 'In', 'Ja', 'Jae', 'Ji', 'Jin', 'Jong', 'Joo', 'Joon', 'Ju', 'Jun', 'Jung', 'Ki', 'Kun', 'Kyu', 'Lee', 'Mi', 'Min', 'Moon', 'Nam', 'Ok', 'Park', 'Rin', 'Seo', 'Seul', 'Shi', 'Sik', 'So', 'Song', 'Soo', 'Su', 'Sun', 'Sung', 'Won', 'Woo', 'Ye', 'Yeon', 'Yoo', 'Yu', 'Yul', 'Yun']
-  const entropy = getEntropy()
-  const len = Math.ceil(entropy / Math.log2(kpop.length))
-  let pass = ''
+function generateMunemo () {
+  // https://github.com/jmettraux/munemo
+  function _tos(num, str) {
+    const munemo = [
+      'ba',  'bi',  'bu',  'be',  'bo',  'cha', 'chi', 'chu', 'che', 'cho',
+      'da',  'di',  'du',  'de',  'do',  'fa',  'fi',  'fu',  'fe',  'fo',
+      'ga',  'gi',  'gu',  'ge',  'go',  'ha',  'hi',  'hu',  'he',  'ho',
+      'ja',  'ji',  'ju',  'je',  'jo',  'ka',  'ki',  'ku',  'ke',  'ko',
+      'la',  'li',  'lu',  'le',  'lo',  'ma',  'mi',  'mu',  'me',  'mo',
+      'na',  'ni',  'nu',  'ne',  'no',  'pa',  'pi',  'pu',  'pe',  'po',
+      'ra',  'ri',  'ru',  're',  'ro',  'sa',  'si',  'su',  'se',  'so',
+      'sha', 'shi', 'shu', 'she', 'sho', 'ta',  'ti',  'tu',  'te',  'to',
+      'tsa', 'tsi', 'tsu', 'tse', 'tso', 'wa',  'wi',  'wu',  'we',  'wo',
+      'ya',  'yi',  'yu',  'ye',  'yo',  'za',  'zi',  'zu',  'ze',  'zo'
+    ]
 
-  for (let i = 0; i < len; i++) {
-    pass += kpop[secRand(kpop.length)]
-    if (i % 2 === 1 && i !== len - 1) {
-      pass += '-'
-    }
+    mod = num % 100n
+    rem = num / 100n
+    str = munemo[mod] + str
+
+    if (rem > 0) return _tos(rem, str)
+    else return str
   }
-  return [pass, kpop.length, Math.floor(len * Math.log2(kpop.length))]
+
+  const minEntropy = getEntropy()
+  const isNegative = secRand(2)
+
+  let num = 0n
+
+  // Half the key space is negative, half is non-negative
+  for (let i = 0; i < minEntropy - 1; i++) num += BigInt(secRand(2) * (2 ** i))
+
+  let pass = _tos(num, '')
+
+  // 'xa' = -1 * num:
+  //    fowohazehikorawihomeho =  1989259826396086294829
+  //  xafowohazehikorawihomeho = -1989259826396086294829
+  if (isNegative) pass = 'xa' + pass
+
+  return [pass, pass.length, minEntropy]
+}
+
+function generateProquints () {
+  // https://arxiv.org/html/0901.4016
+  const vowels = 'aiou'
+  const consonants = 'bdfghjklmnprstvz'
+  const entropy = getEntropy()
+  const len = Math.ceil(entropy / 16)
+  let pass = consonants[secRand(16)]
+
+  for (let i = len; i > 0; i--) {
+    pass += vowels[secRand(4)]
+    pass += consonants[secRand(16)]
+    pass += vowels[secRand(4)]
+ 
+    if (i === 1) break
+ 
+    pass += consonants[secRand(16)]
+    pass += '-'
+    pass += consonants[secRand(16)]
+  }
+  
+  pass += consonants[secRand(16)]
+  
+  return [pass, pass.length, len * 16]
 }
 
 function generateBabble () {
-  const pass = []
+  // Spec: https://web.mit.edu/kenta/www/one/bubblebabble/spec/jrtrjwzi/draft-huima-01.txt
+  // Code based on https://github.com/kpalin/bubblepy
   const vowels = 'aeiouy'
   const consonants = 'bcdfghklmnprstvzx'
-  const vEnt = Math.log2(vowels.length)
-  const cEnt = Math.log2(consonants.length)
-  const outEnt = (2 * cEnt) + (2 * vEnt)
-  const inEnt = (3 * cEnt) + (2 * vEnt)
-  let entropy = getEntropy()
-  entropy = entropy - (2 * outEnt)
-  const len = Math.ceil(entropy / inEnt)
-  const totEnt = outEnt + (len * inEnt) + outEnt
-  for (let i = 0; i < len + 2; i++) {
-    for (let j = 0; j < 5; j++) {
-      if (j % 2 === 0) {
-        pass[(5 * i) + j] = generatePass(1, consonants)
-      } else {
-        pass[(5 * i) + j] = generatePass(1, vowels)
-      }
+  const bytes = Math.ceil(getEntropy() / 8)
+  const entropy = new Uint8Array(bytes)
+  let pass = 'x'
+  let checksum = 1
+ 
+  for (let i = 0; i < entropy.length; i++) entropy[i] = secRand(256)
+
+  for (let i = 0; i <= entropy.length; i += 2) {
+    if (i >= entropy.length) {
+      pass += vowels[checksum % 6] + consonants[16] + vowels[Math.floor(checksum / 6)]
+      break
     }
+
+    byte1 = entropy[i]
+    pass += vowels[(((byte1 >> 6) & 3) + checksum) % 6]
+    pass += consonants[(byte1 >> 2) & 15]
+    pass += vowels[((byte1 & 3) + Math.floor(checksum / 6)) % 6]
+ 
+    if ((i + 1) >= entropy.length) break
+ 
+    byte2 = entropy[i+1]
+    pass += consonants[(byte2 >> 4) & 15]
+    pass += '-'
+    pass += consonants[byte2 & 15]
+ 
+    checksum = ((checksum * 5) + (byte1 * 7) + byte2) % 36
   }
-  pass[0] = 'x'
-  pass[pass.length - 1] = 'x'
-  for (let i = pass.length; i > 0; i -= 5) {
-    pass.splice(i, 0, '-')
-  }
-  pass.pop() // strip last '-'
-  return [pass.join(''), (len + 2) * 5, Math.floor(totEnt)]
+
+  pass += 'x'
+
+  return [pass, pass.length, entropy.length * 8]
 }
 
 function generatePseudowords () {
+  let checksum = false
   let pseudoSet
   let ret
   if (args.indexOf('--pseudowords') !== -1) {
@@ -924,18 +1110,24 @@ function generatePseudowords () {
     }
     case 'Babble':
     case 'babble': {
+      checksum = true
       ret = generateBabble()
       break
     }
-    case 'K-pop':
-    case 'k-pop':
-    case 'kpop': {
-      ret = generateKpop()
+    case 'Letterblock':
+    case 'letterblock': {
+      checksum = true
+      ret = generateLetterblock()
       break
     }
-    case 'Ninja':
-    case 'ninja': {
-      ret = generateNinja()
+    case 'Munemo':
+    case 'munemo': {
+      ret = generateMunemo()
+      break
+    }
+    case 'Proquints':
+    case 'proquints': {
+      ret = generateProquints()
       break
     }
   }
@@ -948,6 +1140,7 @@ function generatePseudowords () {
   assocArr.Password = pass
   assocArr.Characters = len
   assocArr.Entropy = ent
+  if (checksum) assocArr.Checksum = true
   return assocArr
 }
 
@@ -955,6 +1148,7 @@ function generateSet (b, randSet) {
   randSet = typeof randSet !== 'undefined' ? randSet : true
   const entropy = getEntropy()
   const assocArr = {}
+  let checksum = false
   let ident = ''
   let s = ''
   switch (b) {
@@ -1010,6 +1204,7 @@ function generateSet (b, randSet) {
     case 32:
       s = '0123456789abcdefghjkmnpqrstvwxyz'
       ident = 'Base32'
+      checksum = true
       break
     case 26:
       s = 'abcdefghjkmnpqrstvwxyz'
@@ -1043,12 +1238,24 @@ function generateSet (b, randSet) {
   }
 
   const len = Math.ceil(entropy / Math.log2(s.length))
-  const pass = generatePass(len, s)
+  let pass = generatePass(len, s)
+
+  if (b === 32) {
+    // Add Crockford's modulo 37 checksum
+    let check = 0n
+    s += '*~$=u'
+
+    for (let i = 0; i < pass.length; i++) check += BigInt(s.indexOf(pass[i]) * 32**(pass.length - i - 1))
+
+    pass += s[check % 37n]
+  }
+
   assocArr.Generator = 'Random'
   assocArr.Wordlist = ident
   assocArr.Password = pass
   assocArr.Characters = len
   assocArr.Entropy = Math.floor(len * Math.log2(s.length))
+  if (checksum) assocArr.Checksum = true
   return assocArr
 }
 
