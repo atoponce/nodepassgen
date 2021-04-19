@@ -54,7 +54,7 @@ Options are:
                                      Pseudowords, Random, System.
       -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.
                                    OPTION must be one of:
-                                     Apple, Babble, K-pop, Ninja.
+                                     Apple, Babble, Letterblock, Munemo, Proquints.
       -r, --random SET           Choose from a string set. Default is Base94.
                                    SET must be one of:
                                      Base256, Base188, Base94, Base85, Base64,
@@ -66,14 +66,13 @@ Options are:
       -s, --system               Use /usr/share/dict/words for the passphrase.
                                    NOTE: larger word lists have more obscure words.
       -t, --traditional          Use Traditional Chinese with Bitcoin.
-
     
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
 
     $ nodepassgen
     Alternate(Trump): playing six maker #SC appointed community
-    Bitcoin(English): marine zone system type middle tilt margin
+    Bitcoin(English): erupt track ivory step owner satoshi slot cradle blind
     Diceware(English): boone ani nuclei cuba bhoy shied
     EFF(Short): hush blot agent ounce trash chess hub
     Pseudowords(Apple): Qihxes-rebvir-3arrid
@@ -91,9 +90,10 @@ is unformatted plaintext:
       {
         "Generator": "Bitcoin",
         "Wordlist": "English",
-        "Password": "mouse oxygen abstract peanut mobile mail dream",
+        "Password": "entire oblige chalk kick cave dilemma sort essence want",
         "Characters": 40,
         "Entropy": 77
+        "Checksum": true
       },
       {
         "Generator": "Diceware",
