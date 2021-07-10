@@ -31,22 +31,18 @@ Options are:
                                      Estonian, Finnish, French, German, Greek,
                                      Hebrew, Hungarian, Italian, Japanese, Latin,
                                      Maori, NLP, Norwegian, Polish, Portuguese,
-                                     Romanian, Russian, Slovak, Slovenian, Spanish
+                                     Romanian, Russian, Slovak, Slovenian, Spanish,
                                      Swedish, Turkish.
                                    NOTE: NLP is "Natural Language Passwords".
-      -D, --dicekey              Generate a hard-coded 198-bit entropy text-based
-                                   DiceKeys key. Format of the key is:
-                                   <character><side><orientation> where:
-                                     <character>: Shuffled A-Z without Q 
-                                          <side>: Random side 1-6 of the die
-                                   <orientation>: Random t,r,b,l direction
       -e, --eff WORDLIST         Choose an EFF wordlist. Default is Short.
                                    WORDLIST must be one of:
                                      Distant, Long, Potter, Short, Thrones, Trek,
                                      Wars.
-      -H, --hyphenate            Hyphenate Alternate, Bitcoin, Diceware, EFF, and
-                                   system passphrases.
+      -H, --hyphenate            Hyphenate Alternate, Bitcoin, Diceware, and EFF
+                                   passphrases.
       -j, --json                 Output the passwords and meta in JSON format.
+      -k, --keyboard             Collect random entropy from keyboard timings.
+                                   See -u, --use-entropy.
       -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.
       -o, --only GENERATOR       Choose a generator instead of printing all six.
                                    GENERATOR must be one of:
@@ -63,10 +59,14 @@ Options are:
                                      DNA, Emoji.
                                    NOTE: Braile Base256, use -R, --braille.
       -R, --braille              Use Braille patterns for Base256.
-      -s, --system               Use /usr/share/dict/words for the passphrase.
-                                   NOTE: larger word lists have more obscure words.
+      -s, --stats                Report remaining entropy statistics.
+                                   A "sample" is 16 bits long and can be a word,
+                                   set, or character, depending on the password.
       -t, --traditional          Use Traditional Chinese with Bitcoin.
-    
+      -u, --use-entropy          Use previously saved entropy for generation.
+                                   Must be used with -o, --only.
+                                   See alsocharacter -k, --keyboard.
+
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
 
