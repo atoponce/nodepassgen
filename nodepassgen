@@ -87,7 +87,7 @@ function getEntropy() {
   }
 }
 
-function getEntropyFile() {
+function setEntropyFile() {
   const homedir = (process.platform === 'win32') ? process.env.HOMEPATH : process.env.HOME
 
   return PATH.join(homedir, 'nodepassgen.json')
@@ -96,7 +96,7 @@ function getEntropyFile() {
 function secRand(count, useEntropy) {
   let num = 0
   const min = 2 ** 16 % count
-  const entropyFile = getEntropyFile()
+  const entropyFile = setEntropyFile()
 
   if (useEntropy) {
     try {
@@ -1518,7 +1518,7 @@ function main() {
   let generator
   let useEntropy = false
   const results = []
-  const entropyFile = getEntropyFile()
+  const entropyFile = setEntropyFile()
 
   // Start processing the command line options
   // print usage
