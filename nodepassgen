@@ -1581,7 +1581,7 @@ function main() {
         break
       }
       default: {
-        const option = args.findIndex((option) => option === '-o' || option === '--only')
+        const option = ARGS.findIndex((option) => option === '-o' || option === '--only')
         console.log('Unknown generator:', ARGS[option + 1])
         process.exit(1)
       }
