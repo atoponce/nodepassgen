@@ -61,9 +61,9 @@ function printUsage() {
   console.log('                                 DNA, Emoji.')
   console.log('                               NOTE: Braile Base256, use -R, --braille.')
   console.log('  -R, --braille              Use Braille patterns for Base256.')
-  console.log('  -s, --stats                Report remaining entropy statistics.')
+  console.log('  -s, --stats                Report collected keyboard entropy statistics.')
   console.log('                               A "sample" is 16 bits long and can be a word,')
-  console.log('                               set, or character, depending on the password.')
+  console.log('                               set, or character depending on the password type.')
   console.log('  -t, --traditional          Use Traditional Chinese with Bitcoin.')
   console.log('  -u, --use-entropy          Use previously saved entropy for generation.')
   console.log('                               Must be used with -o, --only.')
@@ -362,7 +362,7 @@ function generateDiceware(useEntropy) {
   let len = 0
 
   if (wordlist.filter(Array.isArray).length === 2) {
-    // We're working on the 'Natrual Language Passwords' list
+    // We're working on the 'Natural Language Passwords' list
     const len1 = Math.ceil(entropy / Math.log2(wordlist[0].length)) // adjectives
     const len2 = Math.ceil(entropy / Math.log2(wordlist[1].length)) // nouns
 
@@ -374,7 +374,7 @@ function generateDiceware(useEntropy) {
 
     len = len1 + len2
 
-    // building up the password alteraning: adj-noun-adj-noun-...
+    // building up the password alternating: adj-noun-adj-noun-...
     while (bits <= entropy) {
       if (counter % 2 === 0) {
         pass += adjs[counter]
@@ -839,7 +839,7 @@ function generateApple(useEntropy) {
 function generateLetterblock(useEntropy) {
   // https://www.draketo.de/software/letterblock-diceware
   // Diverged from above with:
-  //  - '$' and '%' appended to make the checksum delimeters 6 characters
+  //  - '$' and '%' appended to make the checksum delimiters 6 characters
   //  - Treating digits as leet-speak
   var isDigit = function (str) {
     return str.length === 1 && str.match(/[0-9]/)
@@ -1514,18 +1514,6 @@ function main() {
   const results = []
   const entropyFile = PATH.join(OS.tmpdir(), 'nodepassgen.json')
 
-  var checkEntropyFile = function () {
-    try {
-      const entropy = JSON.parse(FS.readFileSync(entropyFile, 'utf8')).length
-
-      console.log(
-        'You have ' + entropy + ' samples (' + entropy * 16 + ' bits) of entropy available.'
-      )
-    } catch (err) {
-      const entropy = []
-    }
-  }
-
   // Start processing the command line options
   // print usage
   if (ARGS.includes('-h') || ARGS.includes('--help')) {
@@ -1550,9 +1538,19 @@ function main() {
   // collect keyboard entropy, not generate passwords
   if (ARGS.includes('-k') || ARGS.includes('--keyboard')) {
     collectInput(entropyFile)
-    // report keyboard entrop stats, not generate passwords
+    // report keyboard entropy stats, not generate passwords
   } else if (ARGS.includes('-s') || ARGS.includes('--stats')) {
-    checkEntropyFile()
+    try {
+      const entropy = JSON.parse(FS.readFileSync(entropyFile, 'utf8')).length
+
+      console.log(
+        'You have ' + entropy + ' samples (' + entropy * 16 + ' bits) of entropy available.'
+      )
+    } catch (err) {
+      console.log(
+        'You have not collected any keyboard entropy. Collect some with `-k, --keyboard`.'
+      )
+    }
   } else if (generator !== undefined && generator !== null) {
     // otherwise generate passwords from specific a generator
     switch (generator.toLowerCase()) {
