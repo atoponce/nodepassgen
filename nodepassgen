@@ -1,12 +1,15 @@
-#!/usr/bin/nodejs
+#!/usr/bin/env node
 
-let generator
-const fs = require('fs')
-const crypto = require('crypto')
-const results = []
-const args = process.argv
+'use strict'
 
-function printUsage () {
+// globals
+const FS = require('fs')
+const OS = require('os')
+const PATH = require('path')
+const CRYPTO = require('crypto')
+const ARGS = process.argv.slice(2)
+
+function printUsage() {
   console.log('Usage: nodepassgen [OPTION [ARG]]...')
   console.log('NOTE: A Unicode font may be needed to view some of the passwords correctly.')
   console.log('  -h, --help                 Print this help and exit.')
@@ -30,22 +33,18 @@ function printUsage () {
   console.log('                                 Estonian, Finnish, French, German, Greek,')
   console.log('                                 Hebrew, Hungarian, Italian, Japanese, Latin,')
   console.log('                                 Maori, NLP, Norwegian, Polish, Portuguese,')
-  console.log('                                 Romanian, Russian, Slovak, Slovenian, Spanish')
+  console.log('                                 Romanian, Russian, Slovak, Slovenian, Spanish,')
   console.log('                                 Swedish, Turkish.')
   console.log('                               NOTE: NLP is "Natural Language Passwords".')
-  console.log('  -D, --dicekey              Generate a hard-coded 198-bit entropy text-based')
-  console.log('                               DiceKeys key. Format of the key is:')
-  console.log('                               <character><side><orientation> where:')
-  console.log('                                 <character>: Shuffled A-Z without Q ')
-  console.log('                                      <side>: Random side 1-6 of the die')
-  console.log('                               <orientation>: Random t,r,b,l direction')
   console.log('  -e, --eff WORDLIST         Choose an EFF wordlist. Default is Short.')
   console.log('                               WORDLIST must be one of:')
   console.log('                                 Distant, Long, Potter, Short, Thrones, Trek,')
   console.log('                                 Wars.')
-  console.log('  -H, --hyphenate            Hyphenate Alternate, Bitcoin, Diceware, EFF, and')
-  console.log('                               system passphrases.')
+  console.log('  -H, --hyphenate            Hyphenate Alternate, Bitcoin, Diceware, and EFF ')
+  console.log('                               passphrases.')
   console.log('  -j, --json                 Output the passwords and meta in JSON format.')
+  console.log('  -k, --keyboard             Collect random entropy from keyboard timings.')
+  console.log('                               See -u, --use-entropy.')
   console.log('  -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.')
   console.log('  -o, --only GENERATOR       Choose a generator instead of printing all six.')
   console.log('                               GENERATOR must be one of:')
@@ -62,21 +61,24 @@ function printUsage () {
   console.log('                                 DNA, Emoji.')
   console.log('                               NOTE: Braile Base256, use -R, --braille.')
   console.log('  -R, --braille              Use Braille patterns for Base256.')
-  console.log('  -s, --system               Use /usr/share/dict/words for the passphrase.')
-  console.log('                               NOTE: larger word lists have more obscure words.')
+  console.log('  -s, --stats                Report remaining entropy statistics.')
+  console.log('                               A "sample" is 16 bits long and can be a word,')
+  console.log('                               set, or character, depending on the password.')
   console.log('  -t, --traditional          Use Traditional Chinese with Bitcoin.')
+  console.log('  -u, --use-entropy          Use previously saved entropy for generation.')
+  console.log('                               Must be used with -o, --only.')
+  console.log('                               See alsocharacter -k, --keyboard.')
   process.exit()
 }
 
-function getEntropy () {
-  let entropy
-  if (args.indexOf('--min-entropy') !== -1) {
-    entropy = args[args.indexOf('--min-entropy') + 1]
-  } else if (args.indexOf('-m') !== -1) {
-    entropy = args[args.indexOf('-m') + 1]
-  } else {
-    return 70
+function getEntropy() {
+  let entropy = 70
+
+  if (ARGS.includes('-m') || ARGS.includes('--min-entropy')) {
+    const option = ARGS.findIndex((option) => option === '-m' || option === '--min-entropy')
+    entropy = ARGS[option + 1]
   }
+
   if (entropy < 55) {
     console.log('Security value too low. Must be at least 55-bits.')
     process.exit(1)
@@ -85,266 +87,261 @@ function getEntropy () {
   }
 }
 
-function secRand (count) {
-  let rand
-  count >>>= 0
-  const min = (-count >>> 0) % count
+function secRand(count, useEntropy) {
+  let num = 0
+  const min = 2 ** 16 % count
+  const entropyFile = PATH.join(OS.tmpdir(), 'nodepassgen.json')
+
+  if (useEntropy) {
+    try {
+      const entropy = JSON.parse(FS.readFileSync(entropyFile, 'utf8'))
+
+      if (entropy.length > 0) {
+        num = entropy[0]
+        entropy.shift()
+
+        try {
+          FS.writeFileSync(entropyFile, JSON.stringify(entropy))
+        } catch (err) {
+          console.error(err)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   do {
-    rand = parseInt(crypto.randomBytes(4).toString('hex'), 16)
-  } while (rand < min)
-  return rand % count
+    num ^= parseInt(CRYPTO.randomBytes(2).toString('hex'), 16)
+  } while (num < min)
+
+  return num % count
 }
 
-function uniquesOnly (list) {
+function uniquesOnly(list) {
   return [...new Set(list)] // enforce unique elements in array
 }
 
-function generatePass (len, set, spaces) {
+function generatePass(len, set, spaces, useEntropy) {
   let pass = ''
   let passArr = ''
+
   if (typeof set === 'string') {
     passArr = set.split('')
   } else {
     passArr = set
   }
-  for (let i = len; i--;) {
+
+  for (let i = len; i--; ) {
     if (spaces) {
-      pass += passArr[secRand(set.length)]
+      pass += passArr[secRand(set.length, useEntropy)]
       pass += ' '
-    } else pass += passArr[secRand(set.length)]
+    } else {
+      pass += passArr[secRand(set.length, useEntropy)]
+    }
   }
+
   return pass.trim()
 }
 
-function generateDiceware () {
+function generateDiceware(useEntropy) {
   let lang
   let wordlist = []
-  if (args.indexOf('--diceware') !== -1) {
-    lang = args[args.indexOf('--diceware') + 1]
-  } else if (args.indexOf('-d') !== -1) {
-    lang = args[args.indexOf('-d') + 1]
+
+  if (ARGS.includes('-d') || ARGS.includes('--diceware')) {
+    const option = ARGS.findIndex((option) => option === '-d' || option === '--diceware')
+    lang = ARGS[option + 1]
   } else {
     lang = 'English'
   }
-  switch (lang) {
-    case 'Basque':
+
+  switch (lang.toLowerCase()) {
     case 'basque': {
       const dicewareBasque = require('./lists/dicewareBasque')
       wordlist = dicewareBasque.wordlist
       lang = 'Basque'
       break
     }
-    case 'Beale':
     case 'beale': {
       const dicewareBeale = require('./lists/dicewareBeale')
       wordlist = dicewareBeale.wordlist
       lang = 'Beale'
       break
     }
-    case 'Bulgarian':
     case 'bulgarian': {
       const dicewareBulgarian = require('./lists/dicewareBulgarian')
       wordlist = dicewareBulgarian.wordlist
       lang = 'Bulgarian'
       break
     }
-    case 'Catalan':
     case 'catalan': {
       const dicewareCatalan = require('./lists/dicewareCatalan')
       wordlist = dicewareCatalan.wordlist
       lang = 'Catalan'
       break
     }
-    case 'Chinese':
     case 'chinese': {
       const dicewareChinese = require('./lists/dicewareChinese')
       wordlist = dicewareChinese.wordlist
       lang = 'Chinese'
       break
     }
-    case 'Czech':
     case 'czech': {
       const dicewareCzech = require('./lists/dicewareCzech')
       wordlist = dicewareCzech.wordlist
       lang = 'Czech'
       break
     }
-    case 'Danish':
     case 'danish': {
       const dicewareDanish = require('./lists/dicewareDanish')
       wordlist = dicewareDanish.wordlist
       lang = 'Danish'
       break
     }
-    case 'Dutch':
     case 'dutch': {
       const dicewareDutch = require('./lists/dicewareDutch')
       wordlist = dicewareDutch.wordlist
       lang = 'Dutch'
       break
     }
-    case 'English':
     case 'english': {
       const dicewareEnglish = require('./lists/dicewareEnglish')
       wordlist = dicewareEnglish.wordlist
       lang = 'English'
       break
     }
-    case 'Esperanto':
     case 'esperanto': {
       const dicewareEsperanto = require('./lists/dicewareEsperanto')
       wordlist = dicewareEsperanto.wordlist
       lang = 'Esperanto'
       break
     }
-    case 'Estonian':
     case 'estonian': {
       const dicewareEstonian = require('./lists/dicewareEstonian')
       wordlist = dicewareEstonian.wordlist
       lang = 'Estonian'
       break
     }
-    case 'Finnish':
     case 'finnish': {
       const dicewareFinnish = require('./lists/dicewareFinnish')
       wordlist = dicewareFinnish.wordlist
       lang = 'Finnish'
       break
     }
-    case 'French':
     case 'french': {
       const dicewareFrench = require('./lists/dicewareFrench')
       wordlist = dicewareFrench.wordlist
       lang = 'French'
       break
     }
-    case 'German':
     case 'german': {
       const dicewareGerman = require('./lists/dicewareGerman')
       wordlist = dicewareGerman.wordlist
       lang = 'German'
       break
     }
-    case 'Greek':
     case 'greek': {
       const dicewareGreek = require('./lists/dicewareGreek')
       wordlist = dicewareGreek.wordlist
       lang = 'Greek'
       break
     }
-    case 'Hebrew':
     case 'hebrew': {
       const dicewareHebrew = require('./lists/dicewareHebrew')
       wordlist = dicewareHebrew.wordlist
       lang = 'Hebrew'
       break
     }
-    case 'Hungarian':
     case 'hungarian': {
       const dicewareHungarian = require('./lists/dicewareHungarian')
       wordlist = dicewareHungarian.wordlist
       lang = 'Hungarian'
       break
     }
-    case 'Italian':
     case 'italian': {
       const dicewareItalian = require('./lists/dicewareItalian')
       wordlist = dicewareItalian.wordlist
       lang = 'Italian'
       break
     }
-    case 'Japanese':
     case 'japanese': {
       const dicewareJapanese = require('./lists/dicewareJapanese')
       wordlist = dicewareJapanese.wordlist
       lang = 'Japanese'
       break
     }
-    case 'Latin':
     case 'latin': {
       const dicewareLatin = require('./lists/dicewareLatin')
       wordlist = dicewareLatin.wordlist
       lang = 'Latin'
       break
     }
-    case 'Maori':
     case 'maori': {
       const dicewareMaori = require('./lists/dicewareMaori')
       wordlist = dicewareMaori.wordlist
       lang = 'Maori'
       break
     }
-    case 'NLP':
     case 'nlp': {
       const dicewareNLP = require('./lists/dicewareNLP')
       wordlist = dicewareNLP.wordlist
       lang = 'NLP'
       break
     }
-    case 'Norwegian':
     case 'norwegian': {
       const dicewareNorwegian = require('./lists/dicewareNorwegian')
       wordlist = dicewareNorwegian.wordlist
       lang = 'Norwegian'
       break
     }
-    case 'Polish':
     case 'polish': {
       const dicewarePolish = require('./lists/dicewarePolish')
       wordlist = dicewarePolish.wordlist
       lang = 'Polish'
       break
     }
-    case 'Portuguese':
     case 'portuguese': {
       const dicewarePortuguese = require('./lists/dicewarePortuguese')
       wordlist = dicewarePortuguese.wordlist
       lang = 'Portuguese'
       break
     }
-    case 'Romanian':
     case 'romanian': {
       const dicewareRomanian = require('./lists/dicewareRomanian')
       wordlist = dicewareRomanian.wordlist
       lang = 'Romanian'
       break
     }
-    case 'Russian':
     case 'russian': {
       const dicewareRussian = require('./lists/dicewareRussian')
       wordlist = dicewareRussian.wordlist
       lang = 'Russian'
       break
     }
-    case 'Slovak':
     case 'slovak': {
       const dicewareSlovak = require('./lists/dicewareSlovak')
       wordlist = dicewareSlovak.wordlist
       lang = 'Slovak'
       break
     }
-    case 'Slovenian':
     case 'slovenian': {
       const dicewareSlovenian = require('./lists/dicewareSlovenian')
       wordlist = dicewareSlovenian.wordlist
       lang = 'Slovenian'
       break
     }
-    case 'Spanish':
     case 'spanish': {
       const dicewareSpanish = require('./lists/dicewareSpanish')
       wordlist = dicewareSpanish.wordlist
       lang = 'Spanish'
       break
     }
-    case 'Swedish':
     case 'swedish': {
       const dicewareSwedish = require('./lists/dicewareSwedish')
       wordlist = dicewareSwedish.wordlist
       lang = 'Swedish'
       break
     }
-    case 'Turkish':
     case 'turkish': {
       const dicewareTurkish = require('./lists/dicewareTurkish')
       wordlist = dicewareTurkish.wordlist
@@ -352,109 +349,113 @@ function generateDiceware () {
       break
     }
     default: {
-      console.log('Unknown language: ' + lang)
+      console.log('Unknown language:', lang)
       process.exit(1)
     }
   }
+
   wordlist = uniquesOnly(wordlist)
+
   const assocArr = {}
   const entropy = getEntropy()
   let pass = ''
   let len = 0
+
   if (wordlist.filter(Array.isArray).length === 2) {
-    // We're working on the "Natrual Language Passwords" list
+    // We're working on the 'Natrual Language Passwords' list
     const len1 = Math.ceil(entropy / Math.log2(wordlist[0].length)) // adjectives
     const len2 = Math.ceil(entropy / Math.log2(wordlist[1].length)) // nouns
-    const adjs = generatePass(len1, wordlist[0], true).split(" ")
-    const nouns = generatePass(len2, wordlist[1], true).split(" ")
+
+    const adjs = generatePass(len1, wordlist[0], true, useEntropy).split(' ')
+    const nouns = generatePass(len2, wordlist[1], true, useEntropy).split(' ')
+
     let bits = 0
     let counter = 0
+
     len = len1 + len2
+
     // building up the password alteraning: adj-noun-adj-noun-...
     while (bits <= entropy) {
       if (counter % 2 === 0) {
         pass += adjs[counter]
         bits += Math.log2(wordlist[0].length)
-      }
-      else {
+      } else {
         pass += nouns[counter]
         bits += Math.log2(wordlist[1].length)
       }
+
       pass += ' '
       counter++
     }
+
     pass = pass.trim()
-  }
-  else {
+  } else {
     // Every other Diceware word list.
     len = Math.ceil(entropy / Math.log2(wordlist.length))
-    pass = generatePass(len, wordlist, true)
+    pass = generatePass(len, wordlist, true, useEntropy)
   }
-  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+
+  if (ARGS.includes('-H') || ARGS.includes('--hyphenate')) {
     pass = pass.split(' ').join('-')
   }
+
   assocArr.Generator = 'Diceware'
   assocArr.Wordlist = lang
   assocArr.Password = pass
   assocArr.Characters = pass.replace(/\s/g, '').length
   assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+
   return assocArr
 }
 
-function generateEff () {
+function generateEff(useEntropy) {
   let effSet
   let wordlist = []
-  if (args.indexOf('--eff') !== -1) {
-    effSet = args[args.indexOf('--eff') + 1]
-  } else if (args.indexOf('-e') !== -1) {
-    effSet = args[args.indexOf('-e') + 1]
+
+  if (ARGS.includes('-e') || ARGS.includes('--eff')) {
+    const option = ARGS.findIndex((option) => option === '-e' || option === '--eff')
+    effSet = ARGS[option + 1]
   } else {
     effSet = 'Short'
   }
-  switch (effSet) {
-    case 'Distant':
+
+  switch (effSet.toLowerCase()) {
     case 'distant': {
       const effDistant = require('./lists/effDistant')
       wordlist = effDistant.wordlist
       effSet = 'Distant'
       break
     }
-    case 'Long':
     case 'long': {
       const effLong = require('./lists/effLong')
       wordlist = effLong.wordlist
       effSet = 'Long'
       break
     }
-    case 'Potter':
     case 'potter': {
       const effHarryPotter = require('./lists/effHarryPotter')
       wordlist = effHarryPotter.wordlist
       effSet = 'Harry Potter'
       break
     }
-    case 'Short':
     case 'short': {
       const effShort = require('./lists/effShort')
       wordlist = effShort.wordlist
       effSet = 'Short'
       break
     }
-    case 'Thrones':
     case 'thrones': {
       const effGameOfThrones = require('./lists/effGameOfThrones')
       wordlist = effGameOfThrones.wordlist
       effSet = 'Game of Thrones'
       break
     }
-    case 'Trek':
     case 'trek': {
       const effStarTrek = require('./lists/effStarTrek')
       wordlist = effStarTrek.wordlist
       effSet = 'Star Trek'
       break
     }
-    case 'Wars':
     case 'wars': {
       const effStarWars = require('./lists/effStarWars')
       wordlist = effStarWars.wordlist
@@ -462,59 +463,61 @@ function generateEff () {
       break
     }
     default: {
-      console.log('Unknown wordlist: ' + effSet)
+      console.log('Unknown wordlist:', effSet)
       process.exit()
     }
   }
+
   wordlist = uniquesOnly(wordlist)
+
   const assocArr = {}
   const entropy = getEntropy()
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
-  let pass = generatePass(len, wordlist, true)
-  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+  let pass = generatePass(len, wordlist, true, useEntropy)
+
+  if (ARGS.includes('-H') || ARGS.includes('--hyphenate')) {
     pass = pass.split(' ').join('-')
   }
+
   assocArr.Generator = 'EFF'
   assocArr.Wordlist = effSet
   assocArr.Password = pass
   assocArr.Characters = pass.replace(/\s/g, '').length
   assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+
   return assocArr
 }
 
-function generateAlternate () {
+function generateAlternate(useEntropy) {
   let altSet
   let wordlist = []
-  if (args.indexOf('--alternate') !== -1) {
-    altSet = args[args.indexOf('--alternate') + 1]
-  } else if (args.indexOf('-a') !== -1) {
-    altSet = args[args.indexOf('-a') + 1]
+
+  if (ARGS.includes('-a') || ARGS.includes('--alternate')) {
+    const option = ARGS.findIndex((option) => option === '-a' || option === '--alternate')
+    altSet = ARGS[option + 1]
   } else {
     altSet = 'Trump'
   }
-  switch (altSet) {
-    case 'Deseret':
+
+  switch (altSet.toLowerCase()) {
     case 'deseret': {
       const alternateDeseret = require('./lists/alternateDeseret')
       wordlist = alternateDeseret.wordlist
       altSet = 'Deseret'
       break
     }
-    case 'Colors':
     case 'colors': {
       const alternateColors = require('./lists/alternateColors')
       wordlist = alternateColors.wordlist
       altSet = 'Colors'
       break
     }
-    case 'Elvish':
     case 'elvish': {
       const alternateElvish = require('./lists/alternateElvish')
       wordlist = alternateElvish.wordlist
       altSet = 'Elvish'
       break
     }
-    case 'English':
     case 'english': {
       // Do not include /usr/share/dict/words as it may not be English
       const alternateColors = require('./lists/alternateColors')
@@ -557,62 +560,48 @@ function generateAlternate () {
       altSet = 'English (All)'
       break
     }
-    case 'Klingon':
     case 'klingon': {
       const alternateKlingon = require('./lists/alternateKlingon')
       wordlist = alternateKlingon.wordlist
       altSet = 'Klingon'
       break
     }
-    case 'PGP':
-    case 'Pgp':
     case 'pgp': {
       const alternatePgp = require('./lists/alternatePgp')
       wordlist = alternatePgp.wordlist
       altSet = 'PGP'
       break
     }
-    case 'Pokerware':
     case 'pokerware': {
       const alternatePokerware = require('./lists/alternatePokerware')
       wordlist = alternatePokerware.wordlist
       altSet = 'Pokerware'
       break
     }
-    case 'Rockyou':
-    case 'RockYou':
     case 'rockyou': {
       const alternateRockyou = require('./lists/alternateRockyou')
       wordlist = alternateRockyou.wordlist
       altSet = 'RockYou'
       break
     }
-    case 'Shavian':
     case 'shavian': {
       const alternateShavian = require('./lists/alternateShavian')
       wordlist = alternateShavian.wordlist
       altSet = 'Shavian'
       break
     }
-    case 'Simpsons':
     case 'simpsons': {
       const alternateSimpsons = require('./lists/alternateSimpsons')
       wordlist = alternateSimpsons.wordlist
       altSet = 'Simpsons'
       break
     }
-    case 'S/KEY':
-    case 'SKEY':
-    case 'S/Key':
-    case 'SKey':
-    case 's/key':
-    case 'skey': {
+    case 's/key': {
       const alternateSkey = require('./lists/alternateSkey')
       wordlist = alternateSkey.wordlist
       altSet = 'S/KEY'
       break
     }
-    case 'Trump':
     case 'trump': {
       const alternateTrump = require('./lists/alternateTrump')
       wordlist = alternateTrump.wordlist
@@ -620,43 +609,47 @@ function generateAlternate () {
       break
     }
     default: {
-      console.log('Unknown wordlist: ' + altSet)
+      console.log('Unknown wordlist:', altSet)
       process.exit(1)
     }
   }
+
   wordlist = uniquesOnly(wordlist)
+
   const assocArr = {}
   const entropy = getEntropy()
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
-  let pass = generatePass(len, wordlist, true)
-  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+  let pass = generatePass(len, wordlist, true, useEntropy)
+
+  if (ARGS.includes('-H') || ARGS.includes('--hyphenate')) {
     pass = pass.split(' ').join('-')
   }
+
   assocArr.Generator = 'Alternate'
   assocArr.Wordlist = altSet
   assocArr.Password = pass
   assocArr.Characters = pass.replace(/\s/g, '').length
   assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+
   return assocArr
 }
 
-function generateBitcoin () {
+function generateBitcoin(useEntropy) {
   let lang
   let pass = ''
   let wordlist = []
   let checksum = false
 
-  if (args.indexOf('--bitcoin') !== -1) {
-    lang = args[args.indexOf('--bitcoin') + 1]
-  } else if (args.indexOf('-b') !== -1) {
-    lang = args[args.indexOf('-b') + 1]
+  if (ARGS.includes('-b') || ARGS.includes('--bitcoin')) {
+    const option = ARGS.findIndex((option) => option === '-b' || option === '--bitcoin')
+    lang = ARGS[option + 1]
   } else {
     lang = 'English'
   }
-  switch (lang) {
-    case 'Chinese':
+
+  switch (lang.toLowerCase()) {
     case 'chinese': {
-      if ((args.indexOf('--traditional')) !== -1 || (args.indexOf('-t')) !== -1) {
+      if (ARGS.includes('-t') || ARGS.includes('--traditional')) {
         const bitcoinCNTrad = require('./lists/bitcoinCNTrad')
         wordlist = bitcoinCNTrad.wordlist
         lang = 'Chinese (Trad)'
@@ -667,177 +660,132 @@ function generateBitcoin () {
       }
       break
     }
-    case 'Czech':
     case 'czech': {
       const czechWordlist = require('./lists/bitcoinCZ')
       wordlist = czechWordlist.wordlist
-        lang = 'Czech'
+      lang = 'Czech'
       break
     }
-    case 'English':
     case 'english': {
       const englishWordlist = require('./lists/bitcoinEN')
       wordlist = englishWordlist.wordlist
-        lang = 'English'
+      lang = 'English'
       break
     }
-    case 'French':
     case 'french': {
       const frenchWordlist = require('./lists/bitcoinFR')
       wordlist = frenchWordlist.wordlist
-        lang = 'French'
+      lang = 'French'
       break
     }
-    case 'Italian':
     case 'italian': {
       const italianWordlist = require('./lists/bitcoinIT')
       wordlist = italianWordlist.wordlist
-        lang = 'Italian'
+      lang = 'Italian'
       break
     }
-    case 'Japanese':
     case 'japanese': {
       const japaneseWordlist = require('./lists/bitcoinJP')
       wordlist = japaneseWordlist.wordlist
-        lang = 'Japanese'
+      lang = 'Japanese'
       break
     }
-    case 'Korean':
     case 'korean': {
       const koreanWordlist = require('./lists/bitcoinKR')
       wordlist = koreanWordlist.wordlist
-        lang = 'Korean'
+      lang = 'Korean'
       break
     }
-    case 'Portuguese':
     case 'portuguese': {
       const portugueseWordlist = require('./lists/bitcoinPT')
       wordlist = portugueseWordlist.wordlist
-        lang = 'Portuguese'
+      lang = 'Portuguese'
       break
     }
-    case 'Spanish':
     case 'spanish': {
       const spanishWordlist = require('./lists/bitcoinES')
       wordlist = spanishWordlist.wordlist
-        lang = 'Spanish'
+      lang = 'Spanish'
       break
     }
     default: {
-      console.log('Unknown language: ' + lang)
+      console.log('Unknown language:', lang)
       process.exit(1)
     }
   }
+
   wordlist = uniquesOnly(wordlist)
 
-  function _bytesToBinary (bytes) {
+  var bytesToBinary = function (bytes) {
     let total = BigInt(0)
+
     for (let i = 0; i < bytes.length; i++) {
       total |= BigInt(bytes[i] * 256 ** (bytes.length - i - 1))
     }
+
     return total.toString(2)
   }
 
   const assocArr = {}
   const entropy = getEntropy()
   const requiredEntropy = Math.ceil(entropy / 32) * 32 // Multiple of 32 bits, per the bip39 spec
-
   const entropyBuffer = new Uint8Array(Math.ceil(requiredEntropy / 8))
-  for (let i = 0; i < entropyBuffer.length; i++) entropyBuffer[i] = secRand(256)
 
-  const digest = crypto.createHash('sha256').update(entropyBuffer).digest()
-  const entropyBits = _bytesToBinary(entropyBuffer).padStart(requiredEntropy, '0')
-  const checkBits = _bytesToBinary(digest).padStart(256, '0').substr(0, 11 - (requiredEntropy % 11))
+  for (let i = 0; i < entropyBuffer.length; i++) {
+    entropyBuffer[i] = secRand(256, useEntropy)
+  }
+
+  const digest = CRYPTO.createHash('sha256').update(entropyBuffer).digest()
+  const entropyBits = bytesToBinary(entropyBuffer).padStart(requiredEntropy, '0')
+  const checkBits = bytesToBinary(digest)
+    .padStart(256, '0')
+    .substr(0, 11 - (requiredEntropy % 11))
   const allBits = entropyBits + checkBits
 
   const bitWords = allBits.match(/(.{1,11})/g)
   const words = bitWords.map(function (binary) {
-    const index = parseInt(binary, 2)
-    return wordlist[index]
+    return wordlist[parseInt(binary, 2)]
   })
 
   pass = words.join(' ')
 
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
 
-  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
+  if (ARGS.includes('-H') || ARGS.includes('--hyphenate')) {
     pass = pass.split(' ').join('-')
   }
+
   assocArr.Generator = 'Bitcoin'
   assocArr.Wordlist = lang
   assocArr.Password = pass
   assocArr.Characters = pass.replace(/\s/g, '').length
   assocArr.Entropy = requiredEntropy
   assocArr.Checksum = true
+
   return assocArr
 }
 
-function generateDicekey () {
-  const chars = 'ABCDEFGHIJKLMNOPRSTUVWXYZ'.split('')
-  let pass = ''
-  const assocArr = {}
-  for (let i = 0; i < chars.length; i++) {
-    const randInt = secRand(chars.length)
-    const tmp = chars[randInt]
-    chars[randInt] = chars[i]
-    chars[i] = tmp
-  }
-  for (let i = 0; i < chars.length; i++) {
-    const dir = 'trbl'.split('')
-    pass += chars[i]
-    pass += secRand(6) + 1
-    pass += dir[secRand(4)]
-    pass += ' '
-  }
-  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
-    pass = pass.trim().split(' ').join('-')
-  }
-  assocArr.Generator = 'DiceKey'
-  assocArr.Wordlist = 'N/A'
-  assocArr.Password = pass.trim()
-  assocArr.Characters = pass.trim().replace(/\s/g, '').length
-  assocArr.Entropy = 198 // hard-coded
-  return assocArr
-}
-
-function generateSysPass () {
-  const dict = fs.readFileSync('/usr/share/dict/words').toString()
-  let wordlist = uniquesOnly(dict.split('\n'))
-  const assocArr = {}
-  const entropy = getEntropy()
-  const len = Math.ceil(entropy / Math.log2(wordlist.length))
-  let pass = generatePass(len, wordlist, true)
-  if ((args.indexOf('--hyphenate') !== -1) || (args.indexOf('-H')) !== -1) {
-    pass = pass.split(' ').join('-')
-  }
-  assocArr.Generator = 'System'
-  assocArr.Wordlist = '/usr/share/dict/words'
-  assocArr.Password = pass
-  assocArr.Characters = pass.replace(/\s/g, '').length
-  assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
-  return assocArr
-}
-
-function generateApple () {
-  function _apple (n) {
+function generateApple(useEntropy) {
+  var apple = function (n) {
     /*
-            See the Twitter thread at https://twitter.com/AaronToponce/status/1131406726069084160 for full analysis.
+      See the Twitter thread at https://twitter.com/AaronToponce/status/1131406726069084160
+      for full analysis.
 
-            For n ≥ 1 blocks, the entropy in bits per block is:
-                log2(
-                    (6n-1) *    //  One lowercase alphabetic character is randomly capitalized
-                    19^(4n-1) * //  The total possible combinations of consonants
-                    6^(2n) *    //  The total possible combinations of vowels
-                    10 * 2n     //  An 'edge' character is a random digit
-                )
+      For n ≥ 1 blocks, the entropy in bits per block is:
+         log2(
+           (6n-1) *    //  One lowercase alphabetic character is randomly capitalized
+           19^(4n-1) * //  The total possible combinations of consonants
+           6^(2n) *    //  The total possible combinations of vowels
+           10 * 2n     //  An 'edge' character is a random digit
+         )
 
-            E.G.:
-                DVccvc:                      log2( 5 * 19^3  * 6^2 * 10 * 2) ~=  24.558 bits
-                cvCcvD-cvccvc:               log2(11 * 19^7  * 6^4 * 10 * 4) ~=  48.857 bits
-                cvcCvc-Dvccvc-cvccvc:        log2(17 * 19^11 * 6^6 * 10 * 6) ~=  72.231 bits
-                cvccVc-cvccvD-cvccvc-cvccvc: log2(23 * 19^15 * 6^8 * 10 * 8) ~=  95.244 bits
-                et cetera, et cetera, et cetera.
-        */
+      E.G.:
+        DVccvc:                      log2( 5 * 19^3  * 6^2 * 10 * 2) ~=  24.558 bits
+        cvCcvD-cvccvc:               log2(11 * 19^7  * 6^4 * 10 * 4) ~=  48.857 bits
+        cvcCvc-Dvccvc-cvccvc:        log2(17 * 19^11 * 6^6 * 10 * 6) ~=  72.231 bits
+        cvccVc-cvccvD-cvccvc-cvccvc: log2(23 * 19^15 * 6^8 * 10 * 8) ~=  95.244 bits
+        et cetera, et cetera, et cetera.
+    */
     return Math.floor(Math.log2((6 * n - 1) * 19 ** (4 * n - 1) * 6 ** (2 * n) * 20 * n))
   }
 
@@ -848,72 +796,102 @@ function generateApple () {
   const entropy = getEntropy()
 
   let n = 1 // number of blocks
-  while (_apple(n) <= entropy) { n++ };
+
+  while (apple(n) <= entropy) {
+    n++
+  }
+
   for (let i = 0; i < n; i++) {
-    pass[6 * i] = generatePass(1, consonants)
-    pass[6 * i + 1] = generatePass(1, vowels)
-    pass[6 * i + 2] = generatePass(1, consonants)
-    pass[6 * i + 3] = generatePass(1, consonants)
-    pass[6 * i + 4] = generatePass(1, vowels)
-    pass[6 * i + 5] = generatePass(1, consonants)
+    pass[6 * i] = generatePass(1, consonants, false, useEntropy)
+    pass[6 * i + 1] = generatePass(1, vowels, false, useEntropy)
+    pass[6 * i + 2] = generatePass(1, consonants, false, useEntropy)
+    pass[6 * i + 3] = generatePass(1, consonants, false, useEntropy)
+    pass[6 * i + 4] = generatePass(1, vowels, false, useEntropy)
+    pass[6 * i + 5] = generatePass(1, consonants, false, useEntropy)
   }
 
   let dLoc = 0
   let cLoc = 0
-  const edge = secRand(2 * n) // [0, 2n)
-  const digit = generatePass(1, digits)
+  const edge = secRand(2 * n, useEntropy) // [0, 2n)
+  const digit = generatePass(1, digits, false, useEntropy)
 
-  if (edge % 2 === 0) { dLoc = 3 * edge } else { dLoc = 3 * edge + 2 }
+  if (edge % 2 === 0) {
+    dLoc = 3 * edge
+  } else {
+    dLoc = 3 * edge + 2
+  }
+
   pass[dLoc] = digit
 
-  do { cLoc = secRand(pass.length) } while (cLoc === dLoc)
+  do {
+    cLoc = secRand(pass.length, useEntropy)
+  } while (cLoc === dLoc)
+
   pass[cLoc] = pass[cLoc].toUpperCase()
 
   for (let i = n - 1; i > 0; i--) {
     pass.splice(6 * i, 0, '-')
   }
 
-  return [pass.join(''), pass.length, _apple(n)]
+  return [pass.join(''), pass.length, apple(n)]
 }
 
-function generateLetterblock () {
+function generateLetterblock(useEntropy) {
   // https://www.draketo.de/software/letterblock-diceware
   // Diverged from above with:
   //  - '$' and '%' appended to make the checksum delimeters 6 characters
   //  - Treating digits as leet-speak
-  function _isDigit (str) {
+  var isDigit = function (str) {
     return str.length === 1 && str.match(/[0-9]/)
   }
 
-  function _replaceDigit (str) {
-    if (str === '0') return 'o'
-    else if (str === '1') return 'l'
-    else if (str === '2') return 'z'
-    else if (str === '3') return 'e'
-    else if (str === '4') return 'a'
-    else if (str === '5') return 's'
-    else if (str === '6') return 'b'
-    else if (str === '7') return 't'
-    else if (str === '8') return 'b'
-    else if (str === '9') return 'g'
+  var replaceDigit = function (str) {
+    if (str === '0') {
+      return 'o'
+    } else if (str === '1') {
+      return 'l'
+    } else if (str === '2') {
+      return 'z'
+    } else if (str === '3') {
+      return 'e'
+    } else if (str === '4') {
+      return 'a'
+    } else if (str === '5') {
+      return 's'
+    } else if (str === '6') {
+      return 'b'
+    } else if (str === '7') {
+      return 't'
+    } else if (str === '8') {
+      return 'b'
+    } else if (str === '9') {
+      return 'g'
+    }
   }
 
-  function _getCombos (arr, res, ctr) {
+  var getCombos = function (arr, res, ctr) {
     const ptr0 = ctr.toString(2).padStart(4, '0')[0]
     const ptr1 = ctr.toString(2).padStart(4, '0')[1]
     const ptr2 = ctr.toString(2).padStart(4, '0')[2]
     const ptr3 = ctr.toString(2).padStart(4, '0')[3]
 
-    if (arr[0][ptr0] !== undefined && arr[1][ptr1] !== undefined && arr[2][ptr2] !== undefined && arr[3][ptr3] !== undefined) {
+    if (
+      arr[0][ptr0] !== undefined &&
+      arr[1][ptr1] !== undefined &&
+      arr[2][ptr2] !== undefined &&
+      arr[3][ptr3] !== undefined
+    ) {
       res.push(arr[0][ptr0] + arr[1][ptr1] + arr[2][ptr2] + arr[3][ptr3])
     }
 
     ctr++
 
-    if (ctr < 16) _getCombos(arr, res, ctr)
+    if (ctr < 16) {
+      getCombos(arr, res, ctr)
+    }
   }
 
-  function _calculateScores (arr) {
+  var calculateScores = function (arr) {
     let results = {}
 
     for (let i = 0; i < arr.length; i++) {
@@ -921,15 +899,21 @@ function generateLetterblock () {
       let score = 0
 
       for (let j = 0; j < str.length - 1; j++) {
-        if (_isDigit(str[j])) score += bigrams[_replaceDigit(str[j]) + str[j + 1].toLowerCase()]
-        else if (_isDigit(str[j + 1])) score += bigrams[str[j].toLowerCase() + _replaceDigit(str[j + 1])]
-        else score += bigrams[str[j].toLowerCase() + str[j + 1].toLowerCase()]
+        if (isDigit(str[j])) {
+          score += bigrams[replaceDigit(str[j]) + str[j + 1].toLowerCase()]
+        } else if (isDigit(str[j + 1])) {
+          score += bigrams[str[j].toLowerCase() + replaceDigit(str[j + 1])]
+        } else {
+          score += bigrams[str[j].toLowerCase() + str[j + 1].toLowerCase()]
+        }
       }
 
       results[str] = score
     }
 
-    return Object.keys(results).reduce(function(a, b){ return results[a] > results[b] ? a : b })
+    return Object.keys(results).reduce(function (a, b) {
+      return results[a] > results[b] ? a : b
+    })
   }
 
   const pseudoLetterblock = require('./lists/pseudoBigrams')
@@ -946,7 +930,7 @@ function generateLetterblock () {
   const delimiters = '.+-=@%'
   const blockEntropy = 4 * Math.floor(Math.log2(36))
   const totalEntropy = Math.ceil(entropy / blockEntropy) * blockEntropy
-  const numBlocks = (totalEntropy / blockEntropy)
+  const numBlocks = totalEntropy / blockEntropy
   const blocks = []
   const checks = []
 
@@ -959,19 +943,19 @@ function generateLetterblock () {
     let check = 0
 
     for (let j = 0; j < 4; j++) {
-      const randNum = secRand(36)
+      const randNum = secRand(36, useEntropy)
       const row = Math.floor(randNum / 6)
       const col = randNum % 6
 
       let cell = letters[row][col]
       jail.push(cell)
 
-      check += (row + 1) // Indexed at 1 per the original proposal
+      check += row + 1 // Indexed at 1 per the original proposal
     }
 
-    _getCombos(jail, combos, 0)
+    getCombos(jail, combos, 0)
 
-    let winner = _calculateScores(combos)
+    let winner = calculateScores(combos)
 
     blocks.push(winner)
     checks.push(check)
@@ -980,15 +964,17 @@ function generateLetterblock () {
   for (let i = 0; i < blocks.length; i++) {
     pw += blocks[i]
 
-    if (checks[i + 1] !== undefined) pw += delimiters[(checks[i] + checks[i + 1]) % 6]
+    if (checks[i + 1] !== undefined) {
+      pw += delimiters[(checks[i] + checks[i + 1]) % 6]
+    }
   }
 
   return [pw, pw.length, totalEntropy]
 }
 
-function generateMunemo () {
+function generateMunemo(useEntropy) {
   // https://github.com/jmettraux/munemo
-  function _tos(num, str) {
+  var tos = function(num, str) {
     const munemo = [
       'ba',  'bi',  'bu',  'be',  'bo',  'cha', 'chi', 'chu', 'che', 'cho',
       'da',  'di',  'du',  'de',  'do',  'fa',  'fi',  'fu',  'fe',  'fo',
@@ -1002,58 +988,67 @@ function generateMunemo () {
       'ya',  'yi',  'yu',  'ye',  'yo',  'za',  'zi',  'zu',  'ze',  'zo'
     ]
 
-    mod = num % 100n
-    rem = num / 100n
+    let mod = num % 100n
+    let rem = num / 100n
     str = munemo[mod] + str
 
-    if (rem > 0) return _tos(rem, str)
-    else return str
+    if (rem > 0) {
+      return tos(rem, str)
+    } else {
+      return str
+    }
   }
 
   const minEntropy = getEntropy()
-  const isNegative = secRand(2)
+  const isNegative = secRand(2, useEntropy)
 
   let num = 0n
 
   // Half the key space is negative, half is non-negative
-  for (let i = 0; i < minEntropy - 1; i++) num += BigInt(secRand(2) * (2 ** i))
+  for (let i = 0; i < minEntropy - 1; i++) {
+    num += BigInt(secRand(2, useEntropy) * 2 ** i)
+  }
 
-  let pass = _tos(num, '')
+  let pass = tos(num, '')
 
   // 'xa' = -1 * num:
   //    fowohazehikorawihomeho =  1989259826396086294829
   //  xafowohazehikorawihomeho = -1989259826396086294829
-  if (isNegative) pass = 'xa' + pass
+  if (isNegative) {
+    pass = 'xa' + pass
+  }
 
   return [pass, pass.length, minEntropy]
 }
 
-function generateProquints () {
+function generateProquints(useEntropy) {
   // https://arxiv.org/html/0901.4016
   const vowels = 'aiou'
   const consonants = 'bdfghjklmnprstvz'
   const entropy = getEntropy()
   const len = Math.ceil(entropy / 16)
-  let pass = consonants[secRand(16)]
+  let pass = consonants[secRand(16, useEntropy)]
 
   for (let i = len; i > 0; i--) {
-    pass += vowels[secRand(4)]
-    pass += consonants[secRand(16)]
-    pass += vowels[secRand(4)]
- 
-    if (i === 1) break
- 
-    pass += consonants[secRand(16)]
+    pass += vowels[secRand(4, useEntropy)]
+    pass += consonants[secRand(16, useEntropy)]
+    pass += vowels[secRand(4, useEntropy)]
+
+    if (i === 1) {
+      break
+    }
+
+    pass += consonants[secRand(16, useEntropy)]
     pass += '-'
-    pass += consonants[secRand(16)]
+    pass += consonants[secRand(16, useEntropy)]
   }
-  
-  pass += consonants[secRand(16)]
-  
+
+  pass += consonants[secRand(16, useEntropy)]
+
   return [pass, pass.length, len * 16]
 }
 
-function generateBabble () {
+function generateBabble(useEntropy) {
   // Spec: https://web.mit.edu/kenta/www/one/bubblebabble/spec/jrtrjwzi/draft-huima-01.txt
   // Code based on https://github.com/kpalin/bubblepy
   const vowels = 'aeiouy'
@@ -1062,8 +1057,10 @@ function generateBabble () {
   const entropy = new Uint8Array(bytes)
   let pass = 'x'
   let checksum = 1
- 
-  for (let i = 0; i < entropy.length; i++) entropy[i] = secRand(256)
+
+  for (let i = 0; i < entropy.length; i++) {
+    entropy[i] = secRand(256, useEntropy)
+  }
 
   for (let i = 0; i <= entropy.length; i += 2) {
     if (i >= entropy.length) {
@@ -1071,19 +1068,21 @@ function generateBabble () {
       break
     }
 
-    byte1 = entropy[i]
+    let byte1 = entropy[i]
     pass += vowels[(((byte1 >> 6) & 3) + checksum) % 6]
     pass += consonants[(byte1 >> 2) & 15]
     pass += vowels[((byte1 & 3) + Math.floor(checksum / 6)) % 6]
- 
-    if ((i + 1) >= entropy.length) break
- 
-    byte2 = entropy[i+1]
+
+    if (i + 1 >= entropy.length) {
+      break
+    }
+
+    let byte2 = entropy[i + 1]
     pass += consonants[(byte2 >> 4) & 15]
     pass += '-'
     pass += consonants[byte2 & 15]
- 
-    checksum = ((checksum * 5) + (byte1 * 7) + byte2) % 36
+
+    checksum = (checksum * 5 + byte1 * 7 + byte2) % 36
   }
 
   pass += 'x'
@@ -1091,69 +1090,75 @@ function generateBabble () {
   return [pass, pass.length, entropy.length * 8]
 }
 
-function generatePseudowords () {
+function generatePseudowords(useEntropy) {
   let checksum = false
   let pseudoSet
   let ret
-  if (args.indexOf('--pseudowords') !== -1) {
-    pseudoSet = args[args.indexOf('--pseudowords') + 1]
-  } else if (args.indexOf('-p') !== -1) {
-    pseudoSet = args[args.indexOf('-p') + 1]
+
+  if (ARGS.includes('-p') || ARGS.includes('--pseudowords')) {
+    const option = ARGS.findIndex((option) => option === '-p' || option === '--pseudowords')
+    pseudoSet = ARGS[option + 1]
   } else {
     pseudoSet = 'Apple'
   }
-  switch (pseudoSet) {
-    case 'Apple':
+
+  switch (pseudoSet.toLowerCase()) {
     case 'apple': {
-      ret = generateApple()
+      ret = generateApple(useEntropy)
       break
     }
-    case 'Babble':
     case 'babble': {
       checksum = true
-      ret = generateBabble()
+      ret = generateBabble(useEntropy)
       break
     }
-    case 'Letterblock':
     case 'letterblock': {
       checksum = true
-      ret = generateLetterblock()
+      ret = generateLetterblock(useEntropy)
       break
     }
-    case 'Munemo':
     case 'munemo': {
-      ret = generateMunemo()
+      ret = generateMunemo(useEntropy)
       break
     }
-    case 'Proquints':
     case 'proquints': {
-      ret = generateProquints()
+      ret = generateProquints(useEntropy)
       break
+    }
+    default: {
+      console.log('Unknown generator:', pseudoSet)
+      process.exit(1)
     }
   }
+
   const assocArr = {}
   const pass = ret[0]
   const len = ret[1]
   const ent = ret[2]
+
   assocArr.Generator = 'Pseudowords'
   assocArr.Wordlist = pseudoSet
   assocArr.Password = pass
   assocArr.Characters = len
   assocArr.Entropy = ent
-  if (checksum) assocArr.Checksum = true
+
+  if (checksum) {
+    assocArr.Checksum = true
+  }
+
   return assocArr
 }
 
-function generateSet (b, randSet) {
-  randSet = typeof randSet !== 'undefined' ? randSet : true
+function generateSet(b, useEntropy) {
   const entropy = getEntropy()
   const assocArr = {}
   let checksum = false
   let ident = ''
   let s = ''
+
   switch (b) {
-    case 256:
-      if ((args.indexOf('--braille') !== -1) || (args.indexOf('-R') !== -1)) {
+    case 256: {
+      if (ARGS.includes('-R') || ARGS.includes('--braille')) {
         s = '⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿'
         s += '⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿'
         s += '⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿'
@@ -1167,85 +1172,109 @@ function generateSet (b, randSet) {
         ident = 'Latin Extended'
       }
       break
-    case 188:
-      for (let i = 0; i < 94; i++) s += String.fromCharCode(33 + i)
-      for (let i = 0; i < 95; i++) s += String.fromCharCode(161 + i)
+    }
+    case 188: {
+      for (let i = 0; i < 94; i++) {
+        s += String.fromCharCode(33 + i)
+      }
+      for (let i = 0; i < 95; i++) {
+        s += String.fromCharCode(161 + i)
+      }
       s = s.replace(String.fromCharCode(173), '') // soft-hyphen isn't graphical
       ident = 'ISO 8859-1'
       break
-    case 94:
-      for (let i = 0; i < 94; i++) { s += String.fromCharCode(33 + i) }
+    }
+    case 94: {
+      for (let i = 0; i < 94; i++) {
+        s += String.fromCharCode(33 + i)
+      }
       ident = 'Base94'
       break
-    case 85:
+    }
+    case 85: {
       s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&()*+-;<=>?@^_`{|}~'
       ident = 'Base85'
       break
-    case 64:
+    }
+    case 64: {
       s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'
       ident = 'Base64'
       break
-    case 62:
+    }
+    case 62: {
       s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
       ident = 'Base62'
       break
-    case 58:
+    }
+    case 58: {
       s = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
       ident = 'Base58'
       break
-    case 52:
+    }
+    case 52: {
       s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
       ident = 'Base52'
       break
-    case 36:
+    }
+    case 45: {
+      s = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_$%*+-./:'
+      ident = 'Base45'
+      break
+    }
+    case 36: {
       s = '0123456789abcdefghijklmnopqrstuvwxyz'
       ident = 'Base36'
       break
-    case 32:
+    }
+    case 32: {
       s = '0123456789abcdefghjkmnpqrstvwxyz'
       ident = 'Base32'
       checksum = true
       break
-    case 26:
+    }
+    case 26: {
       s = 'abcdefghjkmnpqrstvwxyz'
       ident = 'Base26'
       break
-    case 16:
+    }
+    case 16: {
       s = '0123456789abcdef'
       ident = 'Base16'
       break
-    case 10:
+    }
+    case 10: {
       s = '0123456789'
       ident = 'Base10'
       break
-    case 8:
+    }
+    case 8: {
       s = '01234567'
       ident = 'Base8'
       break
-    case 4:
+    }
+    case 4: {
       s = 'ACGT'
-      ident = 'DNA'
+      ident = 'Base4'
       break
-    case 2:
-      if ((randSet === 'Coins') || (randSet === 'coins')) {
-        s = 'HT'
-        ident = 'Coin Flips'
-      } else {
-        s = '01'
-        ident = 'Base2'
-      }
+    }
+    case 2: {
+      s = '01'
+      ident = 'Base2'
       break
+    }
   }
 
   const len = Math.ceil(entropy / Math.log2(s.length))
-  let pass = generatePass(len, s)
+  let pass = generatePass(len, s, false, useEntropy)
 
   if (b === 32) {
     // Add Crockford's modulo 37 checksum
     let check = 0n
     s += '*~$=u'
 
-    for (let i = 0; i < pass.length; i++) check += BigInt(s.indexOf(pass[i]) * 32**(pass.length - i - 1))
+    for (let i = 0; i < pass.length; i++) {
+      check += BigInt(s.indexOf(pass[i]) * 32 ** (pass.length - i - 1))
+    }
 
     pass += s[check % 37n]
   }
@@ -1255,203 +1284,327 @@ function generateSet (b, randSet) {
   assocArr.Password = pass
   assocArr.Characters = len
   assocArr.Entropy = Math.floor(len * Math.log2(s.length))
-  if (checksum) assocArr.Checksum = true
+
+  if (checksum) {
+    assocArr.Checksum = true
+  }
+
   return assocArr
 }
 
-function generateRandom () {
+function generateRandom(useEntropy) {
   let s = ''
   let randSet
-  if (args.indexOf('--random') !== -1) {
-    randSet = args[args.indexOf('--random') + 1]
-  } else if (args.indexOf('-r') !== -1) {
-    randSet = args[args.indexOf('-r') + 1]
+
+  if (ARGS.includes('-r') || ARGS.includes('--random')) {
+    const option = ARGS.findIndex((option) => option === '-r' || option === '--random')
+    randSet = ARGS[option + 1]
   } else {
     randSet = 'Base94'
   }
-  switch (randSet) {
-    case 'Base256':
-    case 'base256':
-    case '256':
-      s = generateSet(256)
+
+  switch (randSet.toLowerCase()) {
+    case 'base256': {
+      s = generateSet(256, useEntropy)
       break
-    case 'Base188':
-    case 'base188':
-    case '188':
-      s = generateSet(188)
+    }
+    case 'base188': {
+      s = generateSet(188, useEntropy)
       break
-    case 'Base94':
-    case 'base94':
-    case '94':
-      s = generateSet(94)
+    }
+    case 'base94': {
+      s = generateSet(94, useEntropy)
       break
-    case 'Base85':
-    case 'base85':
-    case '85':
-      s = generateSet(85)
+    }
+    case 'base85': {
+      s = generateSet(85, useEntropy)
       break
-    case 'Base64':
-    case 'base64':
-    case '64':
-      s = generateSet(64)
+    }
+    case 'base64': {
+      s = generateSet(64, useEntropy)
       break
-    case 'Base62':
-    case 'base62':
-    case '62':
-      s = generateSet(62)
+    }
+    case 'base62': {
+      s = generateSet(62, useEntropy)
       break
-    case 'Base58':
-    case 'base58':
-    case '58':
-      s = generateSet(58)
+    }
+    case 'base58': {
+      s = generateSet(58, useEntropy)
       break
-    case 'Base52':
-    case 'base52':
-    case '52':
-      s = generateSet(52)
+    }
+    case 'base52': {
+      s = generateSet(52, useEntropy)
       break
-    case 'Base36':
-    case 'base36':
-    case '36':
-      s = generateSet(36)
+    }
+    case 'base45': {
+      s = generateSet(45, useEntropy)
       break
-    case 'Base32':
-    case 'base32':
-    case '32':
-      s = generateSet(32)
+    }
+    case 'base36': {
+      s = generateSet(36, useEntropy)
       break
-    case 'Base26':
-    case 'base26':
-    case '26':
-      s = generateSet(26)
+    }
+    case 'base32': {
+      s = generateSet(32, useEntropy)
       break
-    case 'Base16':
-    case 'base16':
-    case '16':
-      s = generateSet(16)
+    }
+    case 'base26': {
+      s = generateSet(26, useEntropy)
       break
-    case 'Base10':
-    case 'base10':
-    case '10':
-      s = generateSet(10)
+    }
+    case 'base16': {
+      s = generateSet(16, useEntropy)
       break
-    case 'Base8':
-    case 'base8':
-    case '8':
-      s = generateSet(8)
+    }
+    case 'base10': {
+      s = generateSet(10, useEntropy)
       break
-    case 'Base2':
-    case 'base2':
-    case 'Coins':
-    case 'coins':
-    case '2':
-      s = generateSet(2, randSet)
+    }
+    case 'base8': {
+      s = generateSet(8, useEntropy)
       break
-    case 'DNA':
-    case 'dna':
-      s = generateSet(4)
+    }
+    case 'base4': {
+      s = generateSet(4, useEntropy)
       break
-    case 'Emoji':
-    case 'emoji':
-      s = generateEmoji()
+    }
+    case 'base2': {
+      s = generateSet(2, useEntropy)
       break
-    default:
-      console.log('Unknown set: ' + randSet)
+    }
+    case 'emoji': {
+      s = generateEmoji(useEntropy)
+      break
+    }
+    default: {
+      console.log('Unknown set:', randSet)
       process.exit(1)
+    }
   }
+
   return s
 }
 
-function generateEmoji () {
+function generateEmoji(useEntropy) {
   const emojiWordlist = require('./lists/random_emoji')
   const wordlist = uniquesOnly(emojiWordlist.wordlist)
   const entropy = getEntropy()
   const assocArr = {}
   const len = Math.ceil(entropy / Math.log2(wordlist.length))
-  let pass = generatePass(len, wordlist, true)
+
+  let pass = generatePass(len, wordlist, true, useEntropy)
+
   pass = pass.replace(/ /g, '')
   assocArr.Generator = 'Random'
   assocArr.Wordlist = 'Emoji'
   assocArr.Password = pass
   assocArr.Characters = len
   assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+
   return assocArr
 }
 
-if ((args.indexOf('--help') !== -1) || (args.indexOf('-h')) !== -1) {
-  printUsage()
+function shuffle(array) {
+  let counter = array.length
+
+  while (counter > 0) {
+    let index = secRand(counter, false)
+    counter--
+
+    let temp = array[counter]
+    array[counter] = array[index]
+    array[index] = temp
+  }
+
+  return array
 }
 
-if (args.indexOf('--only') !== -1) {
-  generator = args[args.indexOf('--only') + 1]
-} else if (args.indexOf('-o') !== -1) {
-  generator = args[args.indexOf('-o') + 1]
+function debias(bits) {
+  let bitstr = ''
+
+  for (let i = 0; i < 8; i++) {
+    let pair = (bits >> BigInt(14 - 2 * i)) & 0x3n
+
+    if (pair === 1n || pair === 2n) {
+      bitstr += pair >> 1n
+    }
+  }
+
+  return bitstr
 }
-if (generator !== undefined && generator !== null) {
-  switch (generator) {
-    case 'Alternate':
-    case 'alternate':
-      results.push(generateAlternate())
-      break
-    case 'Bitcoin':
-    case 'bitcoin':
-      results.push(generateBitcoin())
-      break
-    case 'Diceware':
-    case 'diceware':
-      results.push(generateDiceware())
-      break
-    case 'EFF':
-    case 'Eff':
-    case 'eff':
-      results.push(generateEff())
-      break
-    case 'DiceKey':
-    case 'DiceKeys':
-    case 'dicekey':
-    case 'dicekeys':
-      results.push(generateDicekey())
-      break
-    case 'System':
-    case 'system':
-      results.push(generateSysPass())
-      break
-    case 'Pseudowords':
-    case 'pseudowords':
-    case 'Pseudoword':
-    case 'pseudoword':
-    case 'Pseudo':
-    case 'pseudo':
-      results.push(generatePseudowords())
-      break
-    case 'Random':
-    case 'random':
-      results.push(generateRandom())
-      break
-    default:
-      console.log('Unknown generator: ' + args[args.indexOf('--only') + 1])
-      process.exit(1)
+
+function processEntropy(arr) {
+  let unbiasedBitstr = ''
+
+  for (let i = 0; i < arr.length; i++) {
+    unbiasedBitstr += debias(arr[i])
   }
-} else {
-  results.push(generateAlternate())
-  results.push(generateBitcoin())
-  results.push(generateDiceware())
-  results.push(generateEff())
-  if ((args.indexOf('--system') !== -1) || (args.indexOf('-s') !== -1)) {
-    results.push(generateSysPass())
+
+  return unbiasedBitstr
+}
+
+function collectInput(entropyFile) {
+  const readline = require('readline')
+  const alternateScipps = require('./lists/alternateScipps')
+  const wordlist = alternateScipps.wordlist
+
+  let input = ''
+  let words = ''
+  const ns = []
+  const challenge = shuffle(wordlist)
+
+  for (let i = 0; i < 100; i++) {
+    words += challenge[i]
+    words += ' '
   }
-  results.push(generatePseudowords())
-  results.push(generateRandom())
-  if ((args.indexOf('--dicekey') !== -1) || (args.indexOf('-D') !== -1)) {
-    results.push(generateDicekey())
+
+  console.log(
+    `
+    Type, not paste these 100 words. Be as accurate as possible, but don't stress it.
+    Entropy is calculated on keypress timings, not the content itself.
+    Entropy is saved in ` +
+      entropyFile +
+      `. Type <ctrl>-<c> when finished.`
+  )
+  console.log()
+  console.log(words)
+  console.log()
+
+  readline.emitKeypressEvents(process.stdin)
+  process.stdin.setRawMode(true)
+
+  process.stdin.on('keypress', (str, key) => {
+    process.stdout.write(str)
+    ns.push(process.hrtime.bigint() & 0xffffn) // least significant 16-bits (65536 nanoseconds)
+
+    if (key.name === 'return') {
+      process.stdout.write('\n')
+    }
+
+    if (key.ctrl && key.name === 'c') {
+      let entropy
+      let bitstr = processEntropy(ns)
+
+      try {
+        entropy = JSON.parse(FS.readFileSync(entropyFile, 'utf8'))
+      } catch (err) {
+        entropy = []
+      }
+
+      const div = Math.floor(bitstr.length / 16)
+
+      for (let i = 0; i < div; i++) {
+        entropy.push(parseInt(bitstr.substr(16 * i, 16), 2))
+      }
+
+      try {
+        FS.writeFileSync(entropyFile, JSON.stringify(entropy))
+      } catch (err) {
+        console.error(err)
+      }
+
+      process.exit(0)
+    }
+  })
+}
+
+function main() {
+  let generator
+  let useEntropy = false
+  const results = []
+  const entropyFile = PATH.join(OS.tmpdir(), 'nodepassgen.json')
+
+  var checkEntropyFile = function () {
+    try {
+      const entropy = JSON.parse(FS.readFileSync(entropyFile, 'utf8')).length
+
+      console.log(
+        'You have ' + entropy + ' samples (' + entropy * 16 + ' bits) of entropy available.'
+      )
+    } catch (err) {
+      const entropy = []
+    }
+  }
+
+  // Start processing the command line options
+  // print usage
+  if (ARGS.includes('-h') || ARGS.includes('--help')) {
+    printUsage()
+  }
+
+  // only one specific generator
+  if (ARGS.includes('-o') || ARGS.includes('--only')) {
+    const option = ARGS.findIndex((option) => option === '-o' || option === '--only')
+    generator = ARGS[option + 1]
+
+    // use keyboard entropy
+    if (ARGS.includes('-u') || ARGS.includes('--use-entropy')) {
+      useEntropy = true
+    }
+  } else if (ARGS.includes('-u') || ARGS.includes('--use-entropy')) {
+    // require -o, --only however
+    console.error('You must use `-o, --only GENERATOR` with `-u, --use-entropy`.')
+    process.exit(1)
+  }
+
+  // collect keyboard entropy, not generate passwords
+  if (ARGS.includes('-k') || ARGS.includes('--keyboard')) {
+    collectInput(entropyFile)
+    // report keyboard entrop stats, not generate passwords
+  } else if (ARGS.includes('-s') || ARGS.includes('--stats')) {
+    checkEntropyFile()
+  } else if (generator !== undefined && generator !== null) {
+    // otherwise generate passwords from specific a generator
+    switch (generator.toLowerCase()) {
+      case 'alternate': {
+        results.push(generateAlternate(useEntropy))
+        break
+      }
+      case 'bitcoin': {
+        results.push(generateBitcoin(useEntropy))
+        break
+      }
+      case 'diceware': {
+        results.push(generateDiceware(useEntropy))
+        break
+      }
+      case 'eff': {
+        results.push(generateEff(useEntropy))
+        break
+      }
+      case 'pseudowords': {
+        results.push(generatePseudowords(useEntropy))
+        break
+      }
+      case 'random': {
+        results.push(generateRandom(useEntropy))
+        break
+      }
+      default: {
+        const option = args.findIndex((option) => option === '-o' || option === '--only')
+        console.log('Unknown generator:', ARGS[option + 1])
+        process.exit(1)
+      }
+    }
+  } else {
+    // otherwise generate all the passwords
+    results.push(generateAlternate(useEntropy))
+    results.push(generateBitcoin(useEntropy))
+    results.push(generateDiceware(useEntropy))
+    results.push(generateEff(useEntropy))
+    results.push(generatePseudowords(useEntropy))
+    results.push(generateRandom(useEntropy))
+  }
+
+  // output valid json
+  if (ARGS.includes('-j') || ARGS.includes('--json')) {
+    console.log(JSON.stringify(results))
+  } else {
+    //if (!ARGS.includes('-k') && !ARGS.includes('--keyboard')) {
+    for (let i = 0; i < results.length; i++) {
+      console.log(results[i].Generator + '(' + results[i].Wordlist + '): ' + results[i].Password)
+    }
   }
 }
 
-if ((args.indexOf('--json') !== -1) || (args.indexOf('-j')) !== -1) {
-  const jsonRet = JSON.stringify(results, null, null)
-  console.log(jsonRet)
-} else {
-  for (let i = 0; i < results.length; i++) {
-    console.log(results[i].Generator + '(' + results[i].Wordlist + '): ' + results[i].Password)
-  }
-}
+main()
