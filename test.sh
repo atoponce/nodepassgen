@@ -10,14 +10,14 @@
 ./nodepassgen -o alternate -a pokerware
 ./nodepassgen -o alternate -a rockyou
 ./nodepassgen -o alternate -a simpsons
-./nodepassgen -o alternate -a skey
+./nodepassgen -o alternate -a s/key
 ./nodepassgen -o alternate -a trump
-./nodepassgen -o alternate -a colors -H
 printf '\n' # blank line
 
 # Bitcoin tests
 ./nodepassgen -o bitcoin -b chinese
 ./nodepassgen -o bitcoin -b chinese -t
+./nodepassgen -o bitcoin -b chinese --traditional
 ./nodepassgen -o bitcoin -b english
 ./nodepassgen -o bitcoin -b french
 ./nodepassgen -o bitcoin -b italian
@@ -25,7 +25,6 @@ printf '\n' # blank line
 ./nodepassgen -o bitcoin -b korean
 ./nodepassgen -o bitcoin -b spanish
 ./nodepassgen -o bitcoin -b portuguese
-./nodepassgen -o bitcoin -b english -H
 printf '\n' # blank line
 
 # Diceware tests
@@ -61,7 +60,6 @@ printf '\n' # blank line
 ./nodepassgen -o diceware -d Spanish
 ./nodepassgen -o diceware -d Swedish
 ./nodepassgen -o diceware -d Turkish
-./nodepassgen -o diceware -d English -H
 printf '\n' # blank line
 
 # EFF tests
@@ -72,7 +70,6 @@ printf '\n' # blank line
 ./nodepassgen -o eff -e thrones
 ./nodepassgen -o eff -e trek
 ./nodepassgen -o eff -e wars
-./nodepassgen -o eff -e short -H
 printf '\n' # blank line
 
 # Pseudowords tests
@@ -81,16 +78,13 @@ printf '\n' # blank line
 ./nodepassgen -o pseudowords -p letterblock
 ./nodepassgen -o pseudowords -p munemo
 ./nodepassgen -o pseudowords -p proquints
-printf '\n' # blank line
-
-# /usr/share/dict/words tests
-./nodepassgen -o system -s
-./nodepassgen -o system -s -H
+./nodepassgen --only pseudowords --pseudowords proquints
 printf '\n' # blank line
 
 # Random tests
 ./nodepassgen -o random -r Base256
 ./nodepassgen -o random -r Base256 -R
+./nodepassgen --only random --random Base256 --braille
 ./nodepassgen -o random -r Base188
 ./nodepassgen -o random -r Base94
 ./nodepassgen -o random -r Base85
@@ -98,15 +92,15 @@ printf '\n' # blank line
 ./nodepassgen -o random -r Base62
 ./nodepassgen -o random -r Base58
 ./nodepassgen -o random -r Base52
+./nodepassgen -o random -r Base45
 ./nodepassgen -o random -r Base36
 ./nodepassgen -o random -r Base32
 ./nodepassgen -o random -r Base26
 ./nodepassgen -o random -r Base16
 ./nodepassgen -o random -r Base10
 ./nodepassgen -o random -r Base8
+./nodepassgen -o random -r Base4
 ./nodepassgen -o random -r Base2
-./nodepassgen -o random -r Coins
-./nodepassgen -o random -r DNA
 ./nodepassgen -o random -r Emoji
 printf '\n' # blank line
 
@@ -115,16 +109,26 @@ printf '\n' # blank line
 ./nodepassgen -o bitcoin -b korean -m 128 -H
 ./nodepassgen -o diceware -d Beale -m 128 -H
 ./nodepassgen -o eff -e long -m 128 -H
-./nodepassgen -o pseudowords -k -m 128 -H
-./nodepassgen -o system -s -m 128 -H
-./nodepassgen -o random -r Coins -m 128
-printf '\n' # blank line
-
-# DiceKey test
-./nodepassgen -o dicekeys -D
+./nodepassgen -o pseudowords -m 128 -H
+./nodepassgen -o random -r Base4 -m 128
 printf '\n' # blank line
 
 # JSON tests
 ./nodepassgen -j
-./nodepassgen -j -H
-./nodepassgen -j -m 128
+./nodepassgen --json --hyphenate
+./nodepassgen --json --min-entropy 128
+printf '\n' # blank line
+
+# Collected entropy test
+mv -f /tmp/nodepassgen.json /tmp/nodepassgen.json.orig 2> /dev/null
+printf '[13997,36649,2123,58827,44935,31730,57625,1752,25325,10942,17430,49713]' > /tmp/nodepassgen.json
+./nodepassgen -s
+./nodepassgen -u -o diceware
+mv -f /tmp/nodepassgen.json.orig /tmp/nodepassgen.json 2> /dev/null
+printf '\n' # blank line
+
+# Collect some entropy as a final test
+./nodepassgen -k
+printf '\n' # blank line
+./nodepassgen --stats
+printf '\n' # blank line
