@@ -55,12 +55,9 @@ function printUsage() {
   console.log('                                 Apple, Babble, Letterblock, Munemo, Proquints.')
   console.log('  -r, --random SET           Choose from a string set. Default is Base94.')
   console.log('                               SET must be one of:')
-  console.log('                                 Base256, Base188, Base94, Base85, Base64,')
-  console.log('                                 Base62, Base58, Base52, Base36, Base32,')
-  console.log('                                 Base26, Base16, Base10, Base8, Base2, Coins,')
-  console.log('                                 DNA, Emoji.')
-  console.log('                               NOTE: Braile Base256, use -R, --braille.')
-  console.log('  -R, --braille              Use Braille patterns for Base256.')
+  console.log('                                 Base256, Base220, Base188, Base94, Base85, Base64,')
+  console.log('                                 Base62, Base58, Base52, Base45, Base36, Base32,')
+  console.log('                                 Base26, Base16, Base10, Base8, Base4, Base2, Emoji.')
   console.log('  -s, --stats                Report collected keyboard entropy statistics.')
   console.log('                               A "sample" is 16 bits long and can be a word,')
   console.log('                               set, or character depending on the password type.')
@@ -1164,19 +1161,22 @@ function generateSet(b, useEntropy) {
 
   switch (b) {
     case 256: {
-      if (ARGS.includes('-R') || ARGS.includes('--braille')) {
-        s = '⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿'
-        s += '⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿'
-        s += '⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿'
-        s += '⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿'
-        ident = 'Braille'
-      } else {
-        s = 'ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔḕḖḗḘḙḚḛḜḝḞḟḠḡḢḣḤḥḦḧḨḩḪḫḬḭḮḯḰḱḲḳḴḵḶḷḸḹḺḻḼḽḾḿ'
-        s += 'ṀṁṂṃṄṅṆṇṈṉṊṋṌṍṎṏṐṑṒṓṔṕṖṗṘṙṚṛṜṝṞṟṠṡṢṣṤṥṦṧṨṩṪṫṬṭṮṯṰṱṲṳṴṵṶṷṸṹṺṻṼṽṾṿ'
-        s += 'ẀẁẂẃẄẅẆẇẈẉẊẋẌẍẎẏẐẑẒẓẔẕẖẗẘẙẚẛẜẝẞẟẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾế'
-        s += 'ỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹỺỻỼỽỾỿ'
-        ident = 'Latin Extended'
+      s = 'ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔḕḖḗḘḙḚḛḜḝḞḟḠḡḢḣḤḥḦḧḨḩḪḫḬḭḮḯḰḱḲḳḴḵḶḷḸḹḺḻḼḽḾḿ'
+      s += 'ṀṁṂṃṄṅṆṇṈṉṊṋṌṍṎṏṐṑṒṓṔṕṖṗṘṙṚṛṜṝṞṟṠṡṢṣṤṥṦṧṨṩṪṫṬṭṮṯṰṱṲṳṴṵṶṷṸṹṺṻṼṽṾṿ'
+      s += 'ẀẁẂẃẄẅẆẇẈẉẊẋẌẍẎẏẐẑẒẓẔẕẖẗẘẙẚẛẜẝẞẟẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾế'
+      s += 'ỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹỺỻỼỽỾỿ'
+      ident = 'Latin Extended'
+      break
+    }
+    case 220: {
+      // Standard ASCII
+      for (let i = 0; i < 94; i++) {
+        s += String.fromCharCode(33 + i)
       }
+      // Excludes Unicod U+F8FF in the Corporate Private Use Area for the Apple logo
+      s += 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ∞±≤≥¥µ∂∑∏π∫ªºΩæ'
+      s += 'ø¿¡¬√ƒ≈∆«»…ÀÃÕŒœ–—“”‘’÷◊ÿŸ⁄€‹›ﬁﬂ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ˜¯˘˙˚¸˝˛ˇ'
+      ident = 'Mac OS Roman'
       break
     }
     case 188: {
@@ -1312,6 +1312,10 @@ function generateRandom(useEntropy) {
   switch (randSet.toLowerCase()) {
     case 'base256': {
       s = generateSet(256, useEntropy)
+      break
+    }
+    case 'base220': {
+      s = generateSet(220, useEntropy)
       break
     }
     case 'base188': {
