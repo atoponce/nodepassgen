@@ -1486,23 +1486,47 @@ function collectInput(entropyFile) {
   process.stdin.setRawMode(true)
 
   process.stdin.on('keypress', (str, key) => {
-    /* I couldn't figure it out, so I asked for help: https://stackoverflow.com/q/68369655/868868
-       NodeJS really should have a boolean to toggle to catch keypress repeats.
+    /*
+      Preventing long-press key repeats, forcing users to type individual keys. I want the user's
+      neural chaotic entropy, not the system's interrupt requests.
 
-       Preventing long-press key repeats, forcing users to type individual keys. I want the user's
-       neural chaotic entropy, not the system's interrupt requests.
+      The fastest typists in the world regularly clock in above 200 wpm. If an English word
+      averages 5 characters, that's 1,000 characters per minute, or about 17 characters per second.
+      At 17 characters per second, that's a 50 ms delay between key presses on average.
 
-       Lowest possible initial key repeat delays on the various operating systems:
-         - Windows: 250 ms
-             https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.systeminformation.keyboarddelay?view=net-5.0
-         - Mac: 225 ms
-             https://ksearch.wordpress.com/2017/06/20/increase-the-key-repeat-rate-in-os-x-sierra/
-         - Linux GNOME: 0 ms, becaues stupid
-             https://askubuntu.com/a/1031070 (you can set it to 0, because stupid)
+      The average English typist however is approximately 40 words or 200 characters per minute.
+      That's about 3 characters per second, or about 300 ms delay between key presses.
 
-       200 ms is a safe lower bound.
+      Quick table:
+
+      |  wpm  |  cpm  |  cps  | Delay  |
+      | :---: | :---: | :---: | :----: |
+      |   40  |  200  |  3.33 | 300 ms | <- average typist
+      |   60  |  300  |   5   | 200 ms |
+      |   80  |  400  |  6.66 | 150 ms |
+      |  100  |  500  |  8.33 | 120 ms | <- my personal typing average
+      |  120  |  600  |   10  | 100 ms |
+      |  140  |  700  | 11.66 |  86 ms |
+      |  160  |  800  | 13.33 |  75 ms |
+      |  180  |  900  |   15  |  67 ms |
+      |  200  | 1000  | 16.66 |  60 ms |
+      |  220  | 1100  | 18.33 |  55 ms | <- current typing speed records
+      |  240  | 1200  |   20  |  50 ms |
+
+      The "Big Three" operating systems all have 30 ms default key repeat delays:
+
+        * Windows: 250 ms initial delay, 30 ms repeat
+        * Mac: 225 ms initial delay, 30 ms repeat
+        * Linux (GNOME): 500 ms initial delay, 30 ms repeat
+
+      I couldn't figure out if NodeJS had an API for catching and disabling key repeats, so I asked
+      for help: https://stackoverflow.com/q/68369655/868868. NodeJS really should have a boolean to
+      toggle for catching keypress repeats.
+
+      Typing at 200 wpm or faster is unlikely given current typing records, and 60 ms still will
+      catch operating system key press repeats.
     */
-    if (lastKey == key.sequence && new Date().getTime() - lastKeyTime < 200) {
+    if (lastKey == key.sequence && new Date().getTime() - lastKeyTime < 60) {
       lastKeyTime = new Date().getTime()
       return
     }
