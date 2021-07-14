@@ -1460,6 +1460,8 @@ function collectInput(entropyFile) {
 
   let input = ''
   let words = ''
+  let lastKey = ''
+  let lastKeyTime = 0
   const ns = []
   const challenge = shuffle(wordlist)
 
@@ -1484,8 +1486,32 @@ function collectInput(entropyFile) {
   process.stdin.setRawMode(true)
 
   process.stdin.on('keypress', (str, key) => {
+    /* I couldn't figure it out, so I asked for help: https://stackoverflow.com/q/68369655/868868
+       NodeJS really should have a boolean to toggle to catch keypress repeats.
+
+       Preventing long-press key repeats, forcing users to type individual keys. I want the user's
+       neural chaotic entropy, not the system's interrupt requests.
+
+       Lowest possible initial key repeat delays on the various operating systems:
+         - Windows: 250 ms
+             https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.systeminformation.keyboarddelay?view=net-5.0
+         - Mac: 225 ms
+             https://ksearch.wordpress.com/2017/06/20/increase-the-key-repeat-rate-in-os-x-sierra/
+         - Linux GNOME: 0 ms, becaues stupid
+             https://askubuntu.com/a/1031070 (you can set it to 0, because stupid)
+
+       200 ms is a safe lower bound.
+    */
+    if (lastKey == key.sequence && new Date().getTime() - lastKeyTime < 200) {
+      lastKeyTime = new Date().getTime()
+      return
+    }
+
     process.stdout.write(str)
     ns.push(process.hrtime.bigint() & 0xffffn) // least significant 16-bits (65536 nanoseconds)
+
+    lastKey = key.sequence
+    lastKeyTime = new Date().getTime()
 
     if (key.name === 'return') {
       process.stdout.write('\n')
