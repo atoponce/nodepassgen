@@ -1203,7 +1203,7 @@ function generateSet(b, useEntropy) {
       break
     }
     case 64: {
-      s = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'
+      s = '`!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_'
       ident = 'Base64'
       break
     }
@@ -1492,7 +1492,7 @@ function collectInput(entropyFile) {
 
       The fastest typists in the world regularly clock in above 200 wpm. If an English word
       averages 5 characters, that's 1,000 characters per minute, or about 17 characters per second.
-      At 17 characters per second, that's a 50 ms delay between key presses on average.
+      At 17 characters per second, that's a 60 ms delay between key presses on average.
 
       The average English typist however is approximately 40 words or 200 characters per minute.
       That's about 3 characters per second, or about 300 ms delay between key presses.
