@@ -1243,8 +1243,8 @@ function processEntropy(arr) {
 
 function collectInput(entropyFile) {
   const readline = require('readline')
-  const alternateScipps = require('./lists/alternateScipps')
-  const wordlist = alternateScipps.wordlist
+  const alternateScripps = require('./lists/alternateScripps')
+  const wordlist = alternateScripps.wordlist
 
   let input = ''
   let words = ''
