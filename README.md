@@ -53,15 +53,12 @@ Options are:
                                      Apple, Babble, Letterblock, Munemo, Proquints.
       -r, --random SET           Choose from a string set. Default is Base94.
                                    SET must be one of:
-                                     Base256, Base188, Base94, Base85, Base64,
-                                     Base62, Base58, Base52, Base36, Base32,
-                                     Base26, Base16, Base10, Base8, Base2, Coins,
-                                     DNA, Emoji.
-                                   NOTE: Braile Base256, use -R, --braille.
-      -R, --braille              Use Braille patterns for Base256.
-      -s, --stats                Report remaining entropy statistics.
+                                     Base256, Base220, Base188, Base94, Base85, Base64,
+                                     Base62, Base58, Base52, Base45, Base36, Base32,
+                                     Base26, Base16, Base10, Base8, Base4, Base2, Emoji.
+      -s, --stats                Report collected keyboard entropy statistics.
                                    A "sample" is 16 bits long and can be a word,
-                                   set, or character, depending on the password.
+                                   set, or character depending on the password type.
       -t, --traditional          Use Traditional Chinese with Bitcoin.
       -u, --use-entropy          Use previously saved entropy for generation.
                                    Must be used with -o, --only.
