@@ -1103,14 +1103,14 @@ function generateSet(b, useEntropy) {
 
   if (b === 32) {
     // Add Crockford's modulo 37 checksum
-    let check = 0n
-    s += '*~$=u'
+    let res = 0n
+    const check = s + '*~$=u'
 
     for (let i = 0; i < pass.length; i++) {
-      check += BigInt(s.indexOf(pass[i]) * 32 ** (pass.length - i - 1))
+      res += BigInt(s.indexOf(pass[i]) * 32 ** (pass.length - i - 1))
     }
 
-    pass += s[check % 37n]
+    pass += check[res % 37n]
   }
 
   assocArr.Generator = 'Random'
