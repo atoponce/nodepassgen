@@ -17,7 +17,7 @@ function printUsage() {
   console.log('                               WORDLIST must be one of:')
   console.log('                                 Deseret, Colors, Elvish, English, Klingon,')
   console.log('                                 PGP, Pokerware, Rockyou, Shavian, Simpsons,')
-  console.log('                                 S/KEY, Trump.')
+  console.log('                                 S/KEY, Trump, Wordle.')
   console.log('                               NOTE: "English" combines every English word list.')
   console.log('  -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.')
   console.log('                               LANGUAGE must be one of:')
@@ -92,6 +92,7 @@ function setEntropyFile() {
 }
 
 function secRand(count, useEntropy) {
+  let rand = 0
   let num = 0
   const min = 2 ** 16 % count
   const entropyFile = setEntropyFile()
@@ -116,7 +117,8 @@ function secRand(count, useEntropy) {
   }
 
   do {
-    num ^= parseInt(CRYPTO.randomBytes(2).toString('hex'), 16)
+    rand = CRYPTO.randomBytes(2)
+    num ^= (rand[0] << 8 | rand[1])
   } while (num < min)
 
   return num % count
@@ -435,7 +437,6 @@ function generateAlternate(useEntropy) {
     wordlist = alternateElvish.wordlist
     altSet = 'Elvish'
   } else if (altSet.toLowerCase() === 'english') {
-    // Do not include /usr/share/dict/words as it may not be English
     const alternateColors = require('./lists/alternateColors')
     const alternatePgp = require('./lists/alternatePgp')
     const alternatePokerware = require('./lists/alternatePokerware')
@@ -443,6 +444,7 @@ function generateAlternate(useEntropy) {
     const alternateSimpsons = require('./lists/alternateSimpsons')
     const alternateSkey = require('./lists/alternateSkey')
     const alternateTrump = require('./lists/alternateTrump')
+    const alternateWordle = require('./lists/alternateWordle')
     const bitcoinEnglish = require('./lists/bitcoinEN')
     const dicewareBeale = require('./lists/dicewareBeale')
     const dicewareEnglish = require('./lists/dicewareEnglish')
@@ -461,6 +463,7 @@ function generateAlternate(useEntropy) {
     wordlist = wordlist.concat(alternateSimpsons.wordlist)  // 5000 words
     wordlist = wordlist.concat(alternateSkey.wordlist)      // 2048 words
     wordlist = wordlist.concat(alternateTrump.wordlist)     // 8192 words
+    wordlist = wordlist.concat(alternateWordle.wordlist)    // 5790 words
     wordlist = wordlist.concat(bitcoinEnglish.wordlist)     // 2048 words
     wordlist = wordlist.concat(dicewareEnglish.wordlist)    // 8192 words
     wordlist = wordlist.concat(dicewareBeale.wordlist)      // 7776 words
@@ -506,6 +509,10 @@ function generateAlternate(useEntropy) {
     const alternateTrump = require('./lists/alternateTrump')
     wordlist = alternateTrump.wordlist
     altSet = 'Trump'
+  } else if (altSet.toLowerCase() === 'wordle') {
+    const alternateWordle = require('./lists/alternateWordle')
+    wordlist = alternateWordle.wordlist
+    altSet = 'Wordle'
   } else {
     console.log('Unknown wordlist:', altSet)
     process.exit(1)
