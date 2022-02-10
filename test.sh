@@ -2,16 +2,25 @@
 ### Sanity checks to make sure everything works without error
 
 # Alternate tests
+./nodepassgen -o alternate -a afrikaans
+./nodepassgen -o alternate -a belarusian
 ./nodepassgen -o alternate -a colors
+./nodepassgen -o alternate -a croatian
+./nodepassgen -o alternate -a deseret
 ./nodepassgen -o alternate -a elvish
 ./nodepassgen -o alternate -a english
 ./nodepassgen -o alternate -a klingon
+./nodepassgen -o alternate -a mongolian
 ./nodepassgen -o alternate -a pgp
 ./nodepassgen -o alternate -a pokerware
 ./nodepassgen -o alternate -a rockyou
+./nodepassgen -o alternate -a serbian
+./nodepassgen -o alternate -a shavian
 ./nodepassgen -o alternate -a simpsons
 ./nodepassgen -o alternate -a s/key
 ./nodepassgen -o alternate -a trump
+./nodepassgen -o alternate -a ukranian
+./nodepassgen -o alternate -a wordle
 printf '\n' # blank line
 
 # Bitcoin tests

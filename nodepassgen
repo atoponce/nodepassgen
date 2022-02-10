@@ -2,7 +2,7 @@
 
 'use strict'
 
-// globals
+//globals
 const FS = require('fs')
 const OS = require('os')
 const PATH = require('path')
@@ -16,9 +16,10 @@ function printUsage() {
   console.log('  -h, --help                 Print this help and exit.')
   console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
   console.log('                               WORDLIST must be one of:')
-  console.log('                                 Deseret, Colors, Elvish, English, Klingon,')
-  console.log('                                 PGP, Pokerware, Rockyou, Shavian, Simpsons,')
-  console.log('                                 S/KEY, Trump, Wordle.')
+  console.log('                                 Afrikaans, Belarusian, Colors, Croatian,')
+  console.log('                                 Deseret, Elvish, English, Klingon, Mongolian,')
+  console.log('                                 PGP, Pokerware, Rockyou, Serbian, Shavian,')
+  console.log('                                 Simpsons, S/KEY, Trump, Ukranian, Wordle.')
   console.log('                               NOTE: "English" combines every English word list.')
   console.log('  -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.')
   console.log('                               LANGUAGE must be one of:')
@@ -467,14 +468,26 @@ function generateAlternate(useEntropy) {
     altSet = 'Trump'
   }
 
-  if (altSet.toLowerCase() === 'deseret') {
-    const alternateDeseret = require('./lists/alternateDeseret')
-    wordlist = alternateDeseret.wordlist
-    altSet = 'Deseret'
+  if (altSet.toLowerCase() === 'afrikaans') {
+    const alternateAfrikaans = require('./lists/alternateAfrikaans')
+    wordlist = alternateAfrikaans.wordlist
+    altSet = 'Afrikaans'
+  } else if (altSet.toLowerCase() === 'belarusian') {
+    const alternateBelarusian = require('./lists/alternateBelarusian')
+    wordlist = alternateBelarusian.wordlist
+    altSet = 'Belarusian'
   } else if (altSet.toLowerCase() === 'colors') {
     const alternateColors = require('./lists/alternateColors')
     wordlist = alternateColors.wordlist
     altSet = 'Colors'
+  } else if (altSet.toLowerCase() === 'croatian') {
+    const alternateCroatian = require('./lists/alternateCroatian')
+    wordlist = alternateCroatian.wordlist
+    altSet = 'Croatian'
+  } else if (altSet.toLowerCase() === 'deseret') {
+    const alternateDeseret = require('./lists/alternateDeseret')
+    wordlist = alternateDeseret.wordlist
+    altSet = 'Deseret'
   } else if (altSet.toLowerCase() === 'elvish') {
     const alternateElvish = require('./lists/alternateElvish')
     wordlist = alternateElvish.wordlist
@@ -524,6 +537,10 @@ function generateAlternate(useEntropy) {
     const alternateKlingon = require('./lists/alternateKlingon')
     wordlist = alternateKlingon.wordlist
     altSet = 'Klingon'
+  } else if (altSet.toLowerCase() === 'mongolian') {
+    const alternateMongolian = require('./lists/alternateMongolian')
+    wordlist = alternateMongolian.wordlist
+    altSet = 'Mongolian'
   } else if (altSet.toLowerCase() === 'pgp') {
     const alternatePgp = require('./lists/alternatePgp')
     wordlist = alternatePgp.wordlist
@@ -536,6 +553,10 @@ function generateAlternate(useEntropy) {
     const alternateRockyou = require('./lists/alternateRockyou')
     wordlist = alternateRockyou.wordlist
     altSet = 'RockYou'
+  } else if (altSet.toLowerCase() === 'serbian') {
+    const alternateSerbian = require('./lists/alternateSerbian')
+    wordlist = alternateSerbian.wordlist
+    altSet = 'Serbian'
   } else if (altSet.toLowerCase() === 'shavian') {
     const alternateShavian = require('./lists/alternateShavian')
     wordlist = alternateShavian.wordlist
@@ -552,6 +573,10 @@ function generateAlternate(useEntropy) {
     const alternateTrump = require('./lists/alternateTrump')
     wordlist = alternateTrump.wordlist
     altSet = 'Trump'
+  } else if (altSet.toLowerCase() === 'ukranian') {
+    const alternateUkranian = require('./lists/alternateUkranian')
+    wordlist = alternateUkranian.wordlist
+    altSet = 'Ukranian'
   } else if (altSet.toLowerCase() === 'wordle') {
     const alternateWordle = require('./lists/alternateWordle')
     wordlist = alternateWordle.wordlist
