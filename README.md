@@ -13,9 +13,10 @@ Options are:
       -h, --help                 Print this help and exit.
       -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.
                                    WORDLIST must be one of:
-                                     Deseret, Colors, Elvish, English, Klingon,
-                                     PGP, Pokerware, Rockyou, Shavian, Simpsons,
-                                     S/KEY, Trump.
+                                     Afrikaans, Belarusian, Colors, Croatian,
+                                     Deseret, Elvish, English, Klingon, Mongolian,
+                                     PGP, Pokerware, Rockyou, Serbian, Shavian,
+                                     Simpsons, S/KEY, Trump, Ukranian, Wordle.
                                    NOTE: "English" combines every English word list.
       -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.
                                    LANGUAGE must be one of:
@@ -50,7 +51,8 @@ Options are:
                                      Pseudowords, Random, System.
       -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.
                                    OPTION must be one of:
-                                     Apple, Babble, Letterblock, Munemo, Proquints.
+                                     Apple, Babble, Daefen, Letterblock, Munemo,
+                                     Proquints, Urbit.
       -r, --random SET           Choose from a string set. Default is Base94.
                                    SET must be one of:
                                      Base256, Base220, Base188, Base94, Base85, Base64,
@@ -62,7 +64,7 @@ Options are:
       -t, --traditional          Use Traditional Chinese with Bitcoin.
       -u, --use-entropy          Use previously saved entropy for generation.
                                    Must be used with -o, --only.
-                                   See alsocharacter -k, --keyboard.
+                                   See also -k, --keyboard.
 
 Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
