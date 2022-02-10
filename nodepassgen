@@ -67,7 +67,7 @@ function printUsage() {
   console.log('  -t, --traditional          Use Traditional Chinese with Bitcoin.')
   console.log('  -u, --use-entropy          Use previously saved entropy for generation.')
   console.log('                               Must be used with -o, --only.')
-  console.log('                               See alsocharacter -k, --keyboard.')
+  console.log('                               See also -k, --keyboard.')
   process.exit()
 }
 
