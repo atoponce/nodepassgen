@@ -9,6 +9,7 @@ const PATH = require('path')
 const CRYPTO = require('crypto')
 const ARGS = process.argv.slice(2)
 
+/** Print usage. */
 function printUsage() {
   console.log('Usage: nodepassgen [OPTION [ARG]]...')
   console.log('NOTE: A Unicode font may be needed to view some of the passwords correctly.')
@@ -69,6 +70,10 @@ function printUsage() {
   process.exit()
 }
 
+/**
+ * Get minimum entropy margin in bits from the user.
+ * @returns {number} Entropy in bits.
+ */
 function getEntropy() {
   let entropy = 70
 
@@ -85,12 +90,22 @@ function getEntropy() {
   }
 }
 
+/**
+ * Set the location for the entropy file.
+ * @returns {object} File containing entropy generated from the user.
+ */
 function setEntropyFile() {
   const homedir = process.platform === 'win32' ? process.env.HOMEPATH : process.env.HOME
 
   return PATH.join(homedir, 'nodepassgen.json')
 }
 
+/**
+ * A cryptographically secure random number generator.
+ * @param {number} count - The max number a random number can be.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {number} Uniform random number.
+ */
 function secRand(count, useEntropy) {
   let rand = 0
   let num = 0
@@ -124,11 +139,24 @@ function secRand(count, useEntropy) {
   return num % count
 }
 
+/**
+ * Remove any and all duplicates from an array. Case sensitive.
+ * @param {Array} list - An array of strings or numbers which might contain duplicates.
+ * @returns {Array} The array with duplicates removed.
+ */
 function uniquesOnly(list) {
   // enforce unique elements in array
   return [...new Set(list)]
 }
 
+/**
+ * The critical password generation function. Generates a password from a given set of data.
+ * @param {number} len - How many characters/words to pick.
+ * @param {string|Array} set - The data to pick from.
+ * @param {boolean} spaces - Whether or not to include spaces in the password.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {string} The generated password.
+ */
 function generatePass(len, set, spaces, useEntropy) {
   let pass = ''
   let passArr = ''
@@ -151,6 +179,11 @@ function generatePass(len, set, spaces, useEntropy) {
   return pass.trim()
 }
 
+/**
+ * Generate a Diceware passphrase based on the chosen language word list.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Object} An associative array of the generated passphrase and its meta.
+ */
 function generateDiceware(useEntropy) {
   let lang
   let wordlist = []
@@ -349,6 +382,11 @@ function generateDiceware(useEntropy) {
   return assocArr
 }
 
+/**
+ * Generate an EFF passphrase based on the chosen word list.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Object} An associative array of the generated passphrase and its meta.
+ */
 function generateEff(useEntropy) {
   let effSet
   let wordlist = []
@@ -413,6 +451,11 @@ function generateEff(useEntropy) {
   return assocArr
 }
 
+/**
+ * Generate an Alternate passphrase based on the chosen word list.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Object} An associative array of the generated passphrase and its meta.
+ */
 function generateAlternate(useEntropy) {
   let altSet
   let wordlist = []
@@ -538,6 +581,11 @@ function generateAlternate(useEntropy) {
   return assocArr
 }
 
+/**
+ * Generate a Bitcoin BIPS39-compliante passphrase (seed). Contains checksum.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Object} An associative array of the generated passphrase and its meta.
+ */
 function generateBitcoin(useEntropy) {
   let lang
   let pass = ''
@@ -649,7 +697,17 @@ function generateBitcoin(useEntropy) {
   return assocArr
 }
 
+/**
+ * Generate a Keychain formatted password.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} The password string, the length of the password, and the entropy of the password.
+ */
 function generateApple(useEntropy) {
+  /**
+   * Calculate the entropy of an Apple password containing n-blocks.
+   * @param {number} n - The number of blocks in the password.
+   * @returns {number} Entropy in bits.
+   */
   var apple = function (n) {
     /*
       See the Twitter thread at https://twitter.com/AaronToponce/status/1131406726069084160
@@ -720,15 +778,30 @@ function generateApple(useEntropy) {
   return [pass.join(''), pass.length, apple(n)]
 }
 
+/**
+ * Generate a Letterblock password. Contains cehcksum.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} The password string, the length of the password, and the entropy of the password.
+ */
 function generateLetterblock(useEntropy) {
   // https://www.draketo.de/software/letterblock-diceware
   // Diverged from above with:
   //  - '$' and '%' appended to make the checksum delimiters 6 characters
   //  - Treating digits as leet-speak
+  /**
+   * Determines if the string is a digit.
+   * @param {string} str - The string to check.
+   * @returns True if the string is a digit, false otherwise.
+   */
   var isDigit = function (str) {
     return str.length === 1 && str.match(/[0-9]/)
   }
 
+  /**
+   * Replace a string with a leet-speak version.
+   * @param {string} str - A stringified number.
+   * @returns A leet-speak version of the number.
+   */
   var replaceDigit = function (str) {
     if (str === '0') {
       return 'o'
@@ -753,11 +826,17 @@ function generateLetterblock(useEntropy) {
     }
   }
 
+  /**
+   * A recursive function to build a cross-product array of strings based on the contents of "arr".
+   * @param {Array} arr - An array of four random strings from the "letters" multi-dimensional array.
+   * @param {Array} res - The cross-product of the elements on "arr".
+   * @param {number} ctr - A counter to keep track of the number of digits in the string.
+   */
   var getCombos = function (arr, res, ctr) {
-    const ptr0 = ctr.toString(2).padStart(4, '0')[0]
+    const ptr0 = ctr.toString(2).padStart(4, '0')[0]  // most significant bit in bin(ctr)
     const ptr1 = ctr.toString(2).padStart(4, '0')[1]
     const ptr2 = ctr.toString(2).padStart(4, '0')[2]
-    const ptr3 = ctr.toString(2).padStart(4, '0')[3]
+    const ptr3 = ctr.toString(2).padStart(4, '0')[3]  // least significant bit in bin(ctr)
 
     if (
       arr[0][ptr0] !== undefined &&
@@ -765,16 +844,21 @@ function generateLetterblock(useEntropy) {
       arr[2][ptr2] !== undefined &&
       arr[3][ptr3] !== undefined
     ) {
-      res.push(arr[0][ptr0] + arr[1][ptr1] + arr[2][ptr2] + arr[3][ptr3])
+      res.push(arr[0][ptr0] + arr[1][ptr1] + arr[2][ptr2] + arr[3][ptr3]) // the cross-product of "arr"
     }
 
     ctr++
 
-    if (ctr < 16) {
+    if (ctr < 16) { // 0 ('0000') to 15 ('1111')
       getCombos(arr, res, ctr)
     }
   }
 
+  /**
+   * Get the highest weighted bigram in the array.
+   * @param {Array} arr - An array of bigram candidates.
+   * @returns The heighest weighted bigram.
+   */
   var calculateScores = function (arr) {
     let results = {}
 
@@ -860,8 +944,19 @@ function generateLetterblock(useEntropy) {
   return [pw, pw.length, totalEntropy]
 }
 
+/**
+ * Generate a Munemo password.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} An array containing the password, its length, and the entropy used.
+ */
 function generateMunemo(useEntropy) {
   // https://github.com/jmettraux/munemo
+  /**
+   * Recursive function to build an encoded string from a given number.
+   * @param {number} num - The number to encode.
+   * @param {string} str - The encoded string.
+   * @returns {string} The encoded string.
+   */
   var tos = function(num, str) {
     const munemo = [
       'ba',  'bi',  'bu',  'be',  'bo',  'cha', 'chi', 'chu', 'che', 'cho',
@@ -909,6 +1004,11 @@ function generateMunemo(useEntropy) {
   return [pass, pass.length, minEntropy]
 }
 
+/**
+ * Generate a Proquints-compiant password.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} The password string, the length of the password, and the entropy of the password.
+ */
 function generateProquints(useEntropy) {
   // https://arxiv.org/html/0901.4016
   const vowels = 'aiou'
@@ -936,6 +1036,11 @@ function generateProquints(useEntropy) {
   return [pass, pass.length, len * 16]
 }
 
+/**
+ * Generate a Bubble Babble compliant password. Contains checksum.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} The password string, the length of the password, and the entropy of the password.
+ */
 function generateBabble(useEntropy) {
   // Spec: https://web.mit.edu/kenta/www/one/bubblebabble/spec/jrtrjwzi/draft-huima-01.txt
   // Code based on https://github.com/kpalin/bubblepy
@@ -978,6 +1083,11 @@ function generateBabble(useEntropy) {
   return [pass, pass.length, entropy.length * 8]
 }
 
+/**
+ * Generate a Daefen-compliant password.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} The password string, the length of the password, and the entropy of the password.
+ */
 function generateDaefen(useEntropy) {
   const syllables = []
   const consonants = 'bcdfghjklmnprstvwz'
@@ -1030,6 +1140,11 @@ function generateDaefen(useEntropy) {
 
   const len = Math.ceil(entropy / Math.log2(syllables.length)) // 16 bits per "word"
 
+  /**
+   * Determine if the letter is a consonant.
+   * @param {string} letter - A letter to be added to the password.
+   * @returns True if the letter is a consonant, false if it is a vowel.
+   */
   var isConsonant = function (letter) {
     return consonants.indexOf(letter) >= 0
   }
@@ -1058,6 +1173,11 @@ function generateDaefen(useEntropy) {
   return [pass, pass.length, Math.floor(len * Math.log2(syllables.length))]
 }
 
+/**
+ * Generate an urbit phonetic password.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Array} The password string, the length of the password, and the entropy of the password.
+ */
 function generateUrbit(useEntropy) {
   const prefixes = [
     "doz", "mar", "bin", "wan", "sam", "lit", "sig", "hid", "fid", "lis", "sog", "dir", "wac", "sab", "wis", "sib",
@@ -1109,6 +1229,11 @@ function generateUrbit(useEntropy) {
   return [pass, pass.length, len * 16]
 }
 
+/**
+ * Generate a pseudowords password.
+ * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
+ * @returns {Object} An associative array of the generated password and its meta.
+ */
 function generatePseudowords(useEntropy) {
   let checksum = false
   let pseudoSet
@@ -1160,6 +1285,12 @@ function generatePseudowords(useEntropy) {
   return assocArr
 }
 
+/**
+ * Generate a random meaningless password string.
+ * @param {number} b - A number base.
+ * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
+ * @returns {Object} An associative array of the generated password and its meta.
+ */
 function generateSet(b, useEntropy) {
   const entropy = getEntropy()
   const assocArr = {}
@@ -1269,8 +1400,13 @@ function generateSet(b, useEntropy) {
   return assocArr
 }
 
+/**
+ * Determine the right password generator to use when generating the random password.
+ * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
+ * @returns {Object} An associative array of the generated password and its meta from the correctly determined helper function.
+ */
 function generateRandom(useEntropy) {
-  let s = ''
+  let assocArr
   let randSet
 
   if (ARGS.includes('-r') || ARGS.includes('--random')) {
@@ -1281,51 +1417,56 @@ function generateRandom(useEntropy) {
   }
 
   if (randSet.toLowerCase() === 'base256') {
-    s = generateSet(256, useEntropy)
+    assocArr = generateSet(256, useEntropy)
   } else if (randSet.toLowerCase() === 'base220') {
-    s = generateSet(220, useEntropy)
+    assocArr = generateSet(220, useEntropy)
   } else if (randSet.toLowerCase() === 'base188') {
-    s = generateSet(188, useEntropy)
+    assocArr = generateSet(188, useEntropy)
   } else if (randSet.toLowerCase() === 'base94') {
-    s = generateSet(94, useEntropy)
+    assocArr = generateSet(94, useEntropy)
   } else if (randSet.toLowerCase() === 'base85') {
-    s = generateSet(85, useEntropy)
+    assocArr = generateSet(85, useEntropy)
   } else if (randSet.toLowerCase() === 'base64') {
-    s = generateSet(64, useEntropy)
+    assocArr = generateSet(64, useEntropy)
   } else if (randSet.toLowerCase() === 'base62') {
-    s = generateSet(62, useEntropy)
+    assocArr = generateSet(62, useEntropy)
   } else if (randSet.toLowerCase() === 'base58') {
-    s = generateSet(58, useEntropy)
+    assocArr = generateSet(58, useEntropy)
   } else if (randSet.toLowerCase() === 'base52') {
-    s = generateSet(52, useEntropy)
+    assocArr = generateSet(52, useEntropy)
   } else if (randSet.toLowerCase() === 'base45') {
-    s = generateSet(45, useEntropy)
+    assocArr = generateSet(45, useEntropy)
   } else if (randSet.toLowerCase() === 'base36') {
-    s = generateSet(36, useEntropy)
+    assocArr = generateSet(36, useEntropy)
   } else if (randSet.toLowerCase() === 'base32') {
-    s = generateSet(32, useEntropy)
+    assocArr = generateSet(32, useEntropy)
   } else if (randSet.toLowerCase() === 'base26') {
-    s = generateSet(26, useEntropy)
+    assocArr = generateSet(26, useEntropy)
   } else if (randSet.toLowerCase() === 'base16') {
-    s = generateSet(16, useEntropy)
+    assocArr = generateSet(16, useEntropy)
   } else if (randSet.toLowerCase() === 'base10') {
-    s = generateSet(10, useEntropy)
+    assocArr = generateSet(10, useEntropy)
   } else if (randSet.toLowerCase() === 'base8') {
-    s = generateSet(8, useEntropy)
+    assocArr = generateSet(8, useEntropy)
   } else if (randSet.toLowerCase() === 'base4') {
-    s = generateSet(4, useEntropy)
+    assocArr = generateSet(4, useEntropy)
   } else if (randSet.toLowerCase() === 'base2') {
-    s = generateSet(2, useEntropy)
+    assocArr = generateSet(2, useEntropy)
   } else if (randSet.toLowerCase() === 'emoji') {
-    s = generateEmoji(useEntropy)
+    assocArr = generateEmoji(useEntropy)
   } else {
     console.log('Unknown set:', randSet)
     process.exit(1)
   }
 
-  return s
+  return assocArr
 }
 
+/**
+ * Generate an emoji password.
+ * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
+ * @returns {Object} An associative array of the generated password and its meta.
+ */
 function generateEmoji(useEntropy) {
   const emojiWordlist = require('./lists/random_emoji')
   const wordlist = uniquesOnly(emojiWordlist.wordlist)
@@ -1345,6 +1486,11 @@ function generateEmoji(useEntropy) {
   return assocArr
 }
 
+/**
+ * Shuffle an array using the Fisher-Yates shuffle with a CSPRNG.
+ * @param {Array} array - An array to shuffle the contents of.
+ * @returns {Array} The shuffled array.
+ */
 function shuffle(array) {
   let counter = array.length
 
@@ -1360,6 +1506,11 @@ function shuffle(array) {
   return array
 }
 
+/**
+ * Debias the bitstring using the John von Neumann debias algorithm.
+ * @param {number} bits - The bits that need dibasing.
+ * @returns {number} The debiased bits.
+ */
 function debias(bits) {
   let bitstr = ''
 
@@ -1374,6 +1525,11 @@ function debias(bits) {
   return bitstr
 }
 
+/**
+ * Collect and debias raw entropy from the keyboard.
+ * @param {Array} arr - An array containing raw data that needs to be debiased.
+ * @returns {string} The debiased data.
+ */
 function processEntropy(arr) {
   let unbiasedBitstr = ''
 
@@ -1384,6 +1540,10 @@ function processEntropy(arr) {
   return unbiasedBitstr
 }
 
+/**
+ * Collect raw keyboard timing input from the user. Generate some helper text for the user to type from the Scripps National Spelling Bee word list.
+ * @param {Object} entropyFile - The file containing the entropy data.
+ */
 function collectInput(entropyFile) {
   const readline = require('readline')
   const alternateScripps = require('./lists/alternateScripps')
@@ -1499,6 +1659,7 @@ function collectInput(entropyFile) {
   })
 }
 
+/** The main function. Handles program options. */
 function main() {
   let generator
   let useEntropy = false
