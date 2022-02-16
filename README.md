@@ -123,3 +123,28 @@ is unformatted plaintext:
         "Entropy": 72
       }
     ]
+
+## Dockerfile
+
+To run this using Docker, run these commands.
+
+	git clone https://github.com/atoponce/nodepassgen.git
+	cd nodepassgen
+	docker build -t nodepassgen .
+
+Running nodepassgen.
+
+	docker run --rm nodepassgen
+	docker run --rm nodepassgen -h
+	docker run --rm nodepassgen -j
+
+To collect keyboard entropy, override the entrypoint like this.
+
+	docker run -it --entrypoint /bin/bash nodepassgen
+
+And inside of the container, run these commands.
+
+	# nodepassgen -k
+	...
+	# nodepassgen -s
+	You have 6 samples (96 bits) of entropy available.
