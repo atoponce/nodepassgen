@@ -16,8 +16,8 @@ function printUsage() {
   console.log('  -h, --help                 Print this help and exit.')
   console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
   console.log('                               WORDLIST must be one of:')
-  console.log('                                 Afrikaans, Belarusian, Colors, Croatian,')
-  console.log('                                 Deseret, Elvish, English, Klingon, Mongolian,')
+  console.log('                                 Afrikaans, Belarusian, Colors, Common, Croatian,')
+  console.log('                                 Deseret, Elvish, Every, Klingon, Mongolian,')
   console.log('                                 PGP, Pokerware, Rockyou, Serbian, Shavian,')
   console.log('                                 Simpsons, S/KEY, Trump, Ukranian, Wordle.')
   console.log('                               NOTE: "English" combines every English word list.')
@@ -492,7 +492,7 @@ function generateAlternate(useEntropy) {
     const alternateElvish = require('./lists/alternateElvish')
     wordlist = alternateElvish.wordlist
     altSet = 'Elvish'
-  } else if (altSet.toLowerCase() === 'english') {
+  } else if (altSet.toLowerCase() === 'every') {
     const alternateColors = require('./lists/alternateColors')
     const alternatePgp = require('./lists/alternatePgp')
     const alternatePokerware = require('./lists/alternatePokerware')
@@ -532,7 +532,26 @@ function generateAlternate(useEntropy) {
     wordlist = wordlist.concat(effShort.wordlist)           // 1296 words
     wordlist = wordlist.concat(effStarTrek.wordlist)        // 4000 words
     wordlist = wordlist.concat(effStarWars.wordlist)        // 4000 words
-    altSet = 'English (All)'
+    altSet = 'Every Word List'
+  } else if (altSet.toLowerCase() === 'common') {
+    const alternatePgp = require('./lists/alternatePgp')
+    const alternatePokerware = require('./lists/alternatePokerware')
+    const alternateWordle = require('./lists/alternateWordle')
+    const bitcoinEnglish = require('./lists/bitcoinEN')
+    const dicewareNLP = require('./lists/dicewareNLP')
+    const effDistant = require('./lists/effDistant')
+    const effLong = require('./lists/effLong')
+    const effShort = require('./lists/effShort')
+    wordlist = alternatePgp.wordlist                        //  512 words
+    wordlist = wordlist.concat(alternatePokerware.wordlist) // 5304 words
+    wordlist = wordlist.concat(alternateWordle.wordlist)    // 5790 words
+    wordlist = wordlist.concat(bitcoinEnglish.wordlist)     // 2048 words
+    wordlist = wordlist.concat(dicewareNLP.wordlist[0])     // 1296 words
+    wordlist = wordlist.concat(dicewareNLP.wordlist[1])     // 7776 words
+    wordlist = wordlist.concat(effDistant.wordlist)         // 1296 words
+    wordlist = wordlist.concat(effLong.wordlist)            // 4000 words
+    wordlist = wordlist.concat(effShort.wordlist)           // 1296 words
+    altSet = 'Common Words Only'
   } else if (altSet.toLowerCase() === 'klingon') {
     const alternateKlingon = require('./lists/alternateKlingon')
     wordlist = alternateKlingon.wordlist
