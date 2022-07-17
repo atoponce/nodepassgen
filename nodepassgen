@@ -83,8 +83,8 @@ function getEntropy() {
     entropy = ARGS[option + 1]
   }
 
-  if (entropy < 55) {
-    console.log('Security value too low. Must be at least 55-bits.')
+  if (entropy < 48) {
+    console.log('Security value too low. Must be at least 48-bits.')
     process.exit(1)
   } else {
     return entropy
@@ -783,7 +783,7 @@ function generateApple(useEntropy) {
 
   let n = 1 // number of blocks
 
-  while (apple(n) <= entropy) {
+  while (apple(n) < entropy) {
     n++
   }
 
