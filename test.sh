@@ -5,10 +5,11 @@
 ./nodepassgen -o alternate -a afrikaans
 ./nodepassgen -o alternate -a belarusian
 ./nodepassgen -o alternate -a colors
+./nodepassgen -o alternate -a common
 ./nodepassgen -o alternate -a croatian
 ./nodepassgen -o alternate -a deseret
 ./nodepassgen -o alternate -a elvish
-./nodepassgen -o alternate -a english
+./nodepassgen -o alternate -a everything
 ./nodepassgen -o alternate -a klingon
 ./nodepassgen -o alternate -a mongolian
 ./nodepassgen -o alternate -a pgp
@@ -26,7 +27,6 @@ printf '\n' # blank line
 # Bitcoin tests
 ./nodepassgen -o bitcoin -b chinese
 ./nodepassgen -o bitcoin -b chinese -t
-./nodepassgen -o bitcoin -b chinese --traditional
 ./nodepassgen -o bitcoin -b english
 ./nodepassgen -o bitcoin -b french
 ./nodepassgen -o bitcoin -b italian
@@ -34,6 +34,21 @@ printf '\n' # blank line
 ./nodepassgen -o bitcoin -b korean
 ./nodepassgen -o bitcoin -b spanish
 ./nodepassgen -o bitcoin -b portuguese
+printf '\n' # blank line
+
+# Monero tests
+./nodepassgen -o monero -M chinese
+./nodepassgen -o monero -M dutch
+./nodepassgen -o monero -M english
+./nodepassgen -o monero -M esperanto
+./nodepassgen -o monero -M french
+./nodepassgen -o monero -M german
+./nodepassgen -o monero -M italian
+./nodepassgen -o monero -M japanese
+./nodepassgen -o monero -M lojban
+./nodepassgen -o monero -M portuguese
+./nodepassgen -o monero -M russian
+./nodepassgen -o monero -M spanish
 printf '\n' # blank line
 
 # Diceware tests
@@ -87,13 +102,11 @@ printf '\n' # blank line
 ./nodepassgen -o pseudowords -p letterblock
 ./nodepassgen -o pseudowords -p munemo
 ./nodepassgen -o pseudowords -p proquints
-./nodepassgen --only pseudowords --pseudowords proquints
 printf '\n' # blank line
 
 # Random tests
 ./nodepassgen -o random -r Base256
-./nodepassgen -o random -r Base256 -R
-./nodepassgen --only random --random Base256 --braille
+./nodepassgen -o random -r Base220
 ./nodepassgen -o random -r Base188
 ./nodepassgen -o random -r Base94
 ./nodepassgen -o random -r Base85
@@ -116,9 +129,10 @@ printf '\n' # blank line
 # Entropy tests
 ./nodepassgen -o alternate -a trump -m 128 -H
 ./nodepassgen -o bitcoin -b korean -m 128 -H
+./nodepassgen -o monero -b japanes -m 128 -H
 ./nodepassgen -o diceware -d Beale -m 128 -H
 ./nodepassgen -o eff -e long -m 128 -H
-./nodepassgen -o pseudowords -m 128 -H
+./nodepassgen -o pseudowords -p babble -m 128 -H
 ./nodepassgen -o random -r Base4 -m 128
 printf '\n' # blank line
 
