@@ -13,8 +13,8 @@ Options are:
       -h, --help                 Print this help and exit.
       -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.
                                    WORDLIST must be one of:
-                                     Afrikaans, Belarusian, Colors, Croatian,
-                                     Deseret, Elvish, English, Klingon, Mongolian,
+                                     Afrikaans, Belarusian, Colors, Common, Croatian,
+                                     Deseret, Elvish, Everything, Klingon, Mongolian,
                                      PGP, Pokerware, Rockyou, Serbian, Shavian,
                                      Simpsons, S/KEY, Trump, Ukranian, Wordle.
                                    NOTE: "English" combines every English word list.
@@ -45,9 +45,14 @@ Options are:
       -k, --keyboard             Collect random entropy from keyboard timings.
                                    See -u, --use-entropy.
       -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.
+      -M, --monero LANGUAGE      Choose a Monero language. Default is English.
+                                   LANGUAGE must be one of:
+                                    Chinese, Dutch, English, Esperanto, French, German,
+                                    Italian, Japanese, Lojban, Portuguese, Russian,
+                                    Spanish.
       -o, --only GENERATOR       Choose a generator instead of printing all six.
                                    GENERATOR must be one of:
-                                     Alternate, Bitcoin, Diceware, EFF,
+                                     Alternate, Bitcoin, Diceware, EFF, Monero,
                                      Pseudowords, Random, System.
       -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.
                                    OPTION must be one of:
