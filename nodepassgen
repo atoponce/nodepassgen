@@ -17,7 +17,7 @@ function printUsage() {
   console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
   console.log('                               WORDLIST must be one of:')
   console.log('                                 Afrikaans, Belarusian, Colors, Common, Croatian,')
-  console.log('                                 Deseret, Elvish, Every, Klingon, Mongolian,')
+  console.log('                                 Deseret, Elvish, Everything, Klingon, Mongolian,')
   console.log('                                 PGP, Pokerware, Rockyou, Serbian, Shavian,')
   console.log('                                 Simpsons, S/KEY, Trump, Ukranian, Wordle.')
   console.log('                               NOTE: "English" combines every English word list.')
@@ -48,9 +48,14 @@ function printUsage() {
   console.log('  -k, --keyboard             Collect random entropy from keyboard timings.')
   console.log('                               See -u, --use-entropy.')
   console.log('  -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.')
+  console.log('  -M, --monero LANGUAGE      Choose a Monero language. Default is English.')
+  console.log('                               LANGUAGE must be one of:')
+  console.log('                                Chinese, Dutch, English, Esperanto, French, German,')
+  console.log('                                Italian, Japanese, Lojban, Portuguese, Russian,')
+  console.log('                                Spanish.')
   console.log('  -o, --only GENERATOR       Choose a generator instead of printing all six.')
   console.log('                               GENERATOR must be one of:')
-  console.log('                                 Alternate, Bitcoin, Diceware, EFF,')
+  console.log('                                 Alternate, Bitcoin, Diceware, EFF, Monero,')
   console.log('                                 Pseudowords, Random, System.')
   console.log('  -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.')
   console.log('                               OPTION must be one of:')
@@ -83,7 +88,7 @@ function getEntropy() {
     entropy = ARGS[option + 1]
   }
 
-  if (entropy < 48) {
+  if (entropy < 48 || entropy === undefined) {
     console.log('Security value too low. Must be at least 48-bits.')
     process.exit(1)
   } else {
@@ -492,7 +497,7 @@ function generateAlternate(useEntropy) {
     const alternateElvish = require('./lists/alternateElvish')
     wordlist = alternateElvish.wordlist
     altSet = 'Elvish'
-  } else if (altSet.toLowerCase() === 'every') {
+  } else if (altSet.toLowerCase() === 'everything') {
     const alternateColors = require('./lists/alternateColors')
     const alternatePgp = require('./lists/alternatePgp')
     const alternatePokerware = require('./lists/alternatePokerware')
@@ -626,6 +631,137 @@ function generateAlternate(useEntropy) {
 }
 
 /**
+ * Generate a Monero-compliant passphrase (seed). Contains checksum.
+ * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
+ * @returns {Object} An associative array of the generated passphrase and its meta.
+ */
+function generateMonero(useEntropy) {
+  /**
+   * Calculate the CRC32 of a string.
+   * @param {string} string - The string to calculate.
+   * @returns {number} A 32-bit integer.
+   */
+  var crc32 = function (str) {
+    // https://gist.github.com/lenqwang/1be7b4843a580f2c1df84d5360e5e88c
+    let crc = 0 ^ -1
+    const crcTable = []
+
+    for (let i = 0; i < 256; i++) {
+      let c = i
+
+      for (let j = 0; j < 8; j++) {
+        c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+      }
+
+      crcTable[i] = c
+    }
+
+    for (let i = 0; i < str.length; i++) {
+      crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xff]
+    }
+
+    return (crc ^ -1) >>> 0
+  }
+
+  let lang
+  let pass = ''
+  let wordlist = []
+
+  if (ARGS.includes('-M') || ARGS.includes('--monero')) {
+    const option = ARGS.findIndex((option) => option === '-M' || option === '--monero')
+    lang = ARGS[option + 1]
+  } else {
+    lang = 'English'
+  }
+
+  if (lang.toLowerCase() === 'chinese') {
+    const moneroCN = require('./lists/moneroCN')
+    wordlist = moneroCN.wordlist
+    lang = 'Chinese'
+  } else if (lang.toLowerCase() === 'dutch') {
+    const dutchWordlist = require('./lists/moneroNL')
+    wordlist = dutchWordlist.wordlist
+    lang = 'Czech'
+  } else if (lang.toLowerCase() === 'english') {
+    const englishWordlist = require('./lists/moneroEN')
+    wordlist = englishWordlist.wordlist
+    lang = 'English'
+  } else if (lang.toLowerCase() === 'esperanto') {
+    const esperantoWordlist = require('./lists/moneroEO')
+    wordlist = esperantoWordlist.wordlist
+    lang = 'Esperanto'
+  } else if (lang.toLowerCase() === 'french') {
+    const frenchWordlist = require('./lists/moneroFR')
+    wordlist = frenchWordlist.wordlist
+    lang = 'French'
+  } else if (lang.toLowerCase() === 'german') {
+    const germanWordlist = require('./lists/moneroDE')
+    wordlist = germanWordlist.wordlist
+    lang = 'German'
+  } else if (lang.toLowerCase() === 'italian') {
+    const italianWordlist = require('./lists/moneroIT')
+    wordlist = italianWordlist.wordlist
+    lang = 'Italian'
+  } else if (lang.toLowerCase() === 'japanese') {
+    const japaneseWordlist = require('./lists/moneroJP')
+    wordlist = japaneseWordlist.wordlist
+    lang = 'Japanese'
+  } else if (lang.toLowerCase() === 'lojban') {
+    const lojbanWordlist = require('./lists/moneroJBO')
+    wordlist = lojbanWordlist.wordlist
+    lang = 'Lojban'
+  } else if (lang.toLowerCase() === 'portuguese') {
+    const portugueseWordlist = require('./lists/moneroPT')
+    wordlist = portugueseWordlist.wordlist
+    lang = 'Portuguese'
+  } else if (lang.toLowerCase() === 'russian') {
+    const russianWordlist = require('./lists/moneroRU')
+    wordlist = russianWordlist.wordlist
+    lang = 'Russian'
+  } else if (lang.toLowerCase() === 'spanish') {
+    const spanishWordlist = require('./lists/moneroES')
+    wordlist = spanishWordlist.wordlist
+    lang = 'Spanish'
+  } else {
+    console.log('Unknown language:', lang)
+    process.exit(1)
+  }
+
+  wordlist = uniquesOnly(wordlist)  // Force unique elements in array.
+
+  const assocArr = {}
+  const entropy = Math.ceil(getEntropy() / 32) * 32 // Multiple of 32 bits
+  const len = Math.ceil(entropy / Math.log2(wordlist.length))
+
+  pass = generatePass(len, wordlist, true, useEntropy).split(' ')
+
+  let prefixes = ''
+
+  for (let i = 0; i < pass.length; i++) {
+    prefixes += pass[i].substring(0, 3)
+  }
+
+  const checksum = crc32(prefixes)
+  const checkWord = pass[checksum % pass.length]
+
+  pass.push(checkWord)
+  pass = pass.join(' ')
+
+  if (ARGS.includes('-H') || ARGS.includes('--hyphenate')) {
+    pass = pass.split(' ').join('-')
+  }
+
+  assocArr.Generator = 'Monero'
+  assocArr.Wordlist = lang
+  assocArr.Password = pass
+  assocArr.Characters = pass.replace(/\s/g, '').length
+  assocArr.Entropy = entropy
+  assocArr.Checksum = true
+
+  return assocArr
+}
+
+/**
  * Generate a Bitcoin BIPS39-compliante passphrase (seed). Contains checksum.
  * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
  * @returns {Object} An associative array of the generated passphrase and its meta.
@@ -634,7 +770,6 @@ function generateBitcoin(useEntropy) {
   let lang
   let pass = ''
   let wordlist = []
-  let checksum = false
 
   if (ARGS.includes('-b') || ARGS.includes('--bitcoin')) {
     const option = ARGS.findIndex((option) => option === '-b' || option === '--bitcoin')
@@ -1748,11 +1883,13 @@ function main() {
       )
     }
   } else if (generator !== undefined && generator !== null) {
-    // otherwise generate passwords from specific a generator
+    // otherwise generate passwords from a specific generator
     if (generator.toLowerCase() === 'alternate') {
       results.push(generateAlternate(useEntropy))
     } else if (generator.toLowerCase() === 'bitcoin') {
       results.push(generateBitcoin(useEntropy))
+    } else if (generator.toLowerCase() === 'monero') {
+      results.push(generateMonero(useEntropy))
     } else if (generator.toLowerCase() === 'diceware') {
       results.push(generateDiceware(useEntropy))
     } else if (generator.toLowerCase() === 'eff') {
@@ -1769,7 +1906,11 @@ function main() {
   } else {
     // otherwise generate all the passwords
     results.push(generateAlternate(useEntropy))
-    results.push(generateBitcoin(useEntropy))
+    if (ARGS.includes('-M') || ARGS.includes('--monero')) {
+        results.push(generateMonero(useEntropy))
+    } else {
+        results.push(generateBitcoin(useEntropy))
+    }
     results.push(generateDiceware(useEntropy))
     results.push(generateEff(useEntropy))
     results.push(generatePseudowords(useEntropy))
