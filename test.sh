@@ -99,6 +99,7 @@ printf '\n' # blank line
 # Pseudowords tests
 ./nodepassgen -o pseudowords -p apple
 ./nodepassgen -o pseudowords -p babble
+./nodepassgen -o pseudowords -p lepron
 ./nodepassgen -o pseudowords -p letterblock
 ./nodepassgen -o pseudowords -p munemo
 ./nodepassgen -o pseudowords -p proquints
