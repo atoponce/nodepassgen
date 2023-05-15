@@ -17,9 +17,10 @@ function printUsage() {
   console.log('  -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.')
   console.log('                               WORDLIST must be one of:')
   console.log('                                 Afrikaans, Belarusian, Colors, Common, Croatian,')
-  console.log('                                 Deseret, Elvish, Everything, Klingon, Mongolian,')
-  console.log('                                 PGP, Pokerware, Rockyou, Serbian, Shavian,')
-  console.log('                                 Simpsons, S/KEY, Trump, Ukranian, Wordle.')
+  console.log('                                 Deseret, Elvish, Everything, Klingon, LOTR,')
+  console.log('                                 Mongolian, PGP, Pokerware, Rockyou, Serbian,')
+  console.log('                                 Shavian, Simpsons, S/KEY, Trump, Ukranian,')
+  console.log('                                 Wordle.')
   console.log('                               NOTE: "English" combines every English word list.')
   console.log('  -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.')
   console.log('                               LANGUAGE must be one of:')
@@ -499,6 +500,7 @@ function generateAlternate(useEntropy) {
     altSet = 'Elvish'
   } else if (altSet.toLowerCase() === 'everything') {
     const alternateColors = require('./lists/alternateColors')
+    const alternateEyeware = require('./lists/alternateEyeware')
     const alternatePgp = require('./lists/alternatePgp')
     const alternatePokerware = require('./lists/alternatePokerware')
     const alternateRockyou = require('./lists/alternateRockyou')
@@ -518,6 +520,7 @@ function generateAlternate(useEntropy) {
     const effStarTrek = require('./lists/effStarTrek')
     const effStarWars = require('./lists/effStarWars')
     wordlist = alternateColors.wordlist                     // 1029 words
+    wordlist = wordlist.concat(alternateEyeware.wordlist)   // 8192 words
     wordlist = wordlist.concat(alternatePgp.wordlist)       //  512 words
     wordlist = wordlist.concat(alternatePokerware.wordlist) // 5304 words
     wordlist = wordlist.concat(alternateRockyou.wordlist)   // 7776 words
@@ -561,6 +564,10 @@ function generateAlternate(useEntropy) {
     const alternateKlingon = require('./lists/alternateKlingon')
     wordlist = alternateKlingon.wordlist
     altSet = 'Klingon'
+  } else if (altSet.toLowerCase() === 'lotr') {
+    const alternateEyeware = require('./lists/alternateEyeware')
+    wordlist = alternateEyeware.wordlist
+    altSet = 'LOTR'
   } else if (altSet.toLowerCase() === 'mongolian') {
     const alternateMongolian = require('./lists/alternateMongolian')
     wordlist = alternateMongolian.wordlist
