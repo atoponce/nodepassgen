@@ -13,15 +13,16 @@ Options are:
       -h, --help                 Print this help and exit.
       -a, --alternate WORDLIST   Choose an alternate wordlist. Default is Trump.
                                    WORDLIST must be one of:
-                                     Afrikaans, Belarusian, Colors, Common, Croatian,
-                                     Deseret, Elvish, Everything, Klingon, Mongolian,
-                                     PGP, Pokerware, Rockyou, Serbian, Shavian,
-                                     Simpsons, S/KEY, Trump, Ukranian, Wordle.
+                                     Acronym, Afrikaans, Belarusian, Colors, Common,
+                                     Croatian, Deseret, Elvish, Everything, Klingon,
+                                     LOTR, Mongolian, PGP, Pokerware, Rockyou,
+                                     Serbian, Shavian, Simpsons, S/KEY, Trump,
+                                     Ukranian, VAN, Wordle.
                                    NOTE: "English" combines every English word list.
       -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.
                                    LANGUAGE must be one of:
                                     Chinese, Czech, English, French, Italian,
-                                    Japanese, Korean, Portuguese.
+                                    Japanese, Korean, Portuguese, Spanish.
                                    NOTE: Simplified Chinese is the default Chinese
                                    character set. If you want to use Traditional
                                    Chinese, use --traditional.
@@ -47,22 +48,23 @@ Options are:
       -m, --min-entropy NUMBER   Set a minimum entropy in bits. Default is 70.
       -M, --monero LANGUAGE      Choose a Monero language. Default is English.
                                    LANGUAGE must be one of:
-                                    Chinese, Dutch, English, Esperanto, French, German,
-                                    Italian, Japanese, Lojban, Portuguese, Russian,
-                                    Spanish.
+                                    Chinese, Dutch, English, Esperanto, French,
+                                    German, Italian, Japanese, Lojban, Portuguese,
+                                    Russian, Spanish.
       -o, --only GENERATOR       Choose a generator instead of printing all six.
                                    GENERATOR must be one of:
                                      Alternate, Bitcoin, Diceware, EFF, Monero,
                                      Pseudowords, Random, System.
       -p, --pseudowords OPTION   Choose a Pseudowords option. Default is Apple.
                                    OPTION must be one of:
-                                     Apple, Babble, Daefen, Letterblock, Munemo,
-                                     Proquints, Urbit.
+                                     Apple, Babble, Daefen, DIBELS, Koremutake,
+                                     Lepron, Letterblock, Munemo, Proquints, Urbit.
       -r, --random SET           Choose from a string set. Default is Base94.
                                    SET must be one of:
-                                     Base256, Base220, Base188, Base94, Base85, Base64,
-                                     Base62, Base58, Base52, Base45, Base36, Base32,
-                                     Base26, Base16, Base10, Base8, Base4, Base2, Emoji.
+                                     Base256, Base220, Base188, Base94, Base85,
+                                     Base64, Base62, Base58, Base52, Base45, Base36,
+                                     Base32, Base26, Base16, Base10, Base8, Base4,
+                                     Base2, Emoji, Whitespace
       -s, --stats                Report collected keyboard entropy statistics.
                                    A "sample" is 16 bits long and can be a word,
                                    set, or character depending on the password type.
