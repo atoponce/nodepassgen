@@ -71,7 +71,7 @@ module.exports = {
       const option = args.findIndex((option) => option === '-a' || option === '--alternate')
       altSet = args[option + 1]
     } else {
-      altSet = 'Trump'
+      altSet = 'Common'
     }
   
     if (altSet.toLowerCase() === 'acronym') {
