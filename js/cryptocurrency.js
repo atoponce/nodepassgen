@@ -114,6 +114,7 @@ module.exports = {
     assocArr.Characters = pass.replace(/\s/g, '').length
     assocArr.Entropy = requiredEntropy
     assocArr.Checksum = true
+    assocArr.SetSize = wordlist.length.toLocaleString() + " words"
   
     return assocArr
   },
@@ -245,6 +246,7 @@ module.exports = {
     assocArr.Characters = pass.replace(/\s/g, '').length
     assocArr.Entropy = entropy
     assocArr.Checksum = true
+    assocArr.SetSize = wordlist.length.toLocaleString() + " words"
   
     return assocArr
   }

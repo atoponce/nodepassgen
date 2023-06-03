@@ -8,6 +8,8 @@ module.exports = {
    * @returns {Object} An associative array of the generated password and its meta.
    */
   generatePseudowords: function(useEntropy) {
+    const assocArr = {}
+
     let checksum = false
     let pseudoSet
     let ret
@@ -21,32 +23,40 @@ module.exports = {
   
     if (pseudoSet.toLowerCase() === 'apple') {
       ret = this.generateApple(useEntropy)
+      assocArr.SetSize = "It's complicated."
     } else if (pseudoSet.toLowerCase() === 'babble') {
       checksum = true
       ret = this.generateBabble(useEntropy)
+      assocArr.SetSize = "65,536 pseudowords"
     } else if (pseudoSet.toLowerCase() === 'daefen') {
       ret = this.generateDaefen(useEntropy)
+      assocArr.SetSize = "3,456 syllables"
     } else if (pseudoSet.toLowerCase() === 'dibels') {
       ret = this.generateDibels(useEntropy)
     } else if (pseudoSet.toLowerCase() === 'koremutake') {
       ret = this.generateKoremutake(useEntropy)
+      assocArr.SetSize = "128 syllables"
+    } else if (pseudoSet.toLowerCase() === 'lepron') {
+      ret = this.generateLepron(useEntropy)
+      assocArr.SetSize = "362,797,056 pseudowords"
     } else if (pseudoSet.toLowerCase() === 'letterblock') {
       checksum = true
       ret = this.generateLetterblock(useEntropy)
-    } else if (pseudoSet.toLowerCase() === 'lepron') {
-      ret = this.generateLepron(useEntropy)
+      assocArr.SetSize = "1,679,616 blocks"
     } else if (pseudoSet.toLowerCase() === 'munemo') {
       ret = this.generateMunemo(useEntropy)
+      assocArr.SetSize = "100 syllables"
     } else if (pseudoSet.toLowerCase() === 'proquints') {
       ret = this.generateProquints(useEntropy)
+      assocArr.SetSize = "65,536 pseudowords"
     } else if (pseudoSet.toLowerCase() === 'urbit') {
       ret = this.generateUrbit(useEntropy)
+      assocArr.SetSize = "65,536 pseudowords"
     } else {
       console.log('Unknown generator:', pseudoSet)
       process.exit(1)
     }
   
-    const assocArr = {}
     const pass = ret[0]
     const len = ret[1]
     const entropy = ret[2]

@@ -173,6 +173,7 @@ module.exports = {
   
     const assocArr = {}
     const entropy = main.getEntropy()
+    const setSize = wordlist[0].length + wordlist[1].length + wordlist[2].length
     let pass = ''
   
     if (wordlist.filter(Array.isArray).length === 3) {
@@ -189,6 +190,7 @@ module.exports = {
   
       pass = vans.join(" ")
       assocArr.Entropy = Math.floor(len * vanEntropy)
+      assocArr.SetSize = setSize.toLocaleString() + " words"
     } else if (altSet.toLowerCase() === 'acronym') {
       let counter = 4
       let results
@@ -199,11 +201,13 @@ module.exports = {
       } while (results.security < entropy)
   
       pass = results.passphrase.trim()
+      assocArr.SetSize = wordlist.length.toLocaleString() + " words"
     } else {
       const len = Math.ceil(entropy / Math.log2(wordlist.length))
   
       pass = main.generatePass(len, wordlist, true, useEntropy)
       assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+      assocArr.SetSize = wordlist.length.toLocaleString() + " words"
     }
   
     if (args.includes('-H') || args.includes('--hyphenate')) {

@@ -67,6 +67,7 @@ module.exports = {
     assocArr.Password = pass
     assocArr.Characters = pass.replace(/\s/g, '').length
     assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+    assocArr.SetSize = wordlist.length.toLocaleString() + " words"
   
     return assocArr
   }

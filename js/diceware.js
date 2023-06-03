@@ -155,7 +155,7 @@ module.exports = {
   
     const assocArr = {}
     const entropy = main.getEntropy()
-    let pass = ''
+    let pass = []
     let len = 0
   
     if (wordlist.filter(Array.isArray).length === 2) {
@@ -165,6 +165,8 @@ module.exports = {
   
       const adjs = main.generatePass(len1, wordlist[0], true, useEntropy).split(' ')
       const nouns = main.generatePass(len2, wordlist[1], true, useEntropy).split(' ')
+
+      const setSize = wordlist[0].length + wordlist[1].length
   
       let bits = 0
       let counter = 0
@@ -172,22 +174,27 @@ module.exports = {
       while (bits <= entropy) {
         // building up the password alternating: adj-noun-adj-noun-...
         if (counter % 2 === 0) {
-          pass += adjs[counter]
+          pass.push(adjs[counter])
           bits += Math.log2(wordlist[0].length)
         } else {
-          pass += nouns[counter]
+          pass.push(nouns[counter])
           bits += Math.log2(wordlist[1].length)
         }
   
-        pass += ' '
         counter++
       }
+
+      if (pass.length & 1 === 1) { // adj_1, noun_1, ..., adj_n
+        pass.unshift(pass.pop())   // adj_n, adj_1, noun_1, ...
+      }
   
-      pass = pass.trim()
+      pass = pass.join(' ')
+      assocArr.SetSize = setSize.toLocaleString() + " words"
     } else {
       // Every other Diceware word list.
       len = Math.ceil(entropy / Math.log2(wordlist.length))
       pass = main.generatePass(len, wordlist, true, useEntropy)
+      assocArr.SetSize = wordlist.length.toLocaleString() + " words"
     }
   
     if (args.includes('-H') || args.includes('--hyphenate')) {

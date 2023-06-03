@@ -109,6 +109,7 @@ module.exports = {
     assocArr.Password = pass
     assocArr.Characters = len
     assocArr.Entropy = Math.floor(len * Math.log2(s.length))
+    assocArr.SetSize = s.length.toLocaleString() + " characters"
   
     if (checksum) {
       assocArr.Checksum = true
@@ -201,6 +202,7 @@ module.exports = {
     assocArr.Password = pass
     assocArr.Characters = len
     assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
+    assocArr.SetSize = emojiWordlist.length.toLocaleString() + " emoji"
   
     return assocArr
   },
@@ -253,6 +255,7 @@ module.exports = {
     assocArr.Password = pass
     assocArr.Characters = len
     assocArr.Entropy = Math.floor(len * Math.log2(s.length))
+    assocArr.SetSize = s.length.toLocaleString() + " characters"
   
     return assocArr
   }
