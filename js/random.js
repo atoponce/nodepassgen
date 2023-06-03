@@ -82,7 +82,7 @@ module.exports = {
       s = '01234567'
       ident = 'Base8'
     } else if (b === 4) {
-      s = 'ACGT'
+      s = '0123'
       ident = 'Base4'
     } else if (b === 2) {
       s = '01'
