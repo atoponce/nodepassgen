@@ -77,59 +77,61 @@ Output can be valid JSON, meant to be both human and machine parseable. Default
 is unformatted plaintext:
 
     $ nodepassgen
-    Alternate(Trump): playing six maker #SC appointed community
-    Bitcoin(English): erupt track ivory step owner satoshi slot cradle blind
-    Diceware(English): boone ani nuclei cuba bhoy shied
-    EFF(Short): hush blot agent ounce trash chess hub
-    Pseudowords(Apple): Qihxes-rebvir-3arrid
-    Random(Base94): XuLk?26Y!DS
+    Alternate(Common Words Only): budget injun outlast core juniper roper
+    Bitcoin(English): limb effort shallow balance hill surface conduct jealous slab
+    Diceware(English): craig caper septa vk caiman bible
+    EFF(Short): brim swarm coral elope ozone life dense
+    Pseudowords(Apple): supfa8-gomvok-vifcuF
+    Random(Base94): 9W|4Bg`nTf4
+
 
     $ nodepassgen -j | jq
     [
       {
+        "Entropy": 84,
         "Generator": "Alternate",
-        "Wordlist": "Trump",
-        "Password": "1969 Acosta such McCabe's practiced calendar",
-        "Characters": 39,
-        "Entropy": 78
+        "Wordlist": "Common Words Only",
+        "Password": "hugs oat round safes moray moonscape",
+        "Characters": 31
       },
       {
         "Generator": "Bitcoin",
         "Wordlist": "English",
-        "Password": "entire oblige chalk kick cave dilemma sort essence want",
-        "Characters": 40,
-        "Entropy": 77
+        "Password": "process curtain powder prison interest merge trade purity key",
+        "Characters": 53,
+        "Entropy": 96,
         "Checksum": true
       },
       {
         "Generator": "Diceware",
         "Wordlist": "English",
-        "Password": "cheek kirby milch meter red shred",
-        "Characters": 28,
-        "Entropy": 77
+        "Password": "plead mm thee mp voice r3",
+        "Characters": 20,
+        "Entropy": 78
       },
       {
         "Generator": "EFF",
         "Wordlist": "Short",
-        "Password": "range grasp mute legal mold punch wife",
-        "Characters": 32,
+        "Password": "cope shed width quota kilt petty silo",
+        "Characters": 31,
         "Entropy": 72
       },
       {
         "Generator": "Pseudowords",
         "Wordlist": "Apple",
-        "Password": "9imken-tipnub-zezvaB",
+        "Password": "rehqav-vyJzid-3okhuf",
         "Characters": 20,
         "Entropy": 72
       },
       {
         "Generator": "Random",
         "Wordlist": "Base94",
-        "Password": "=Bc!C\\86uEQ",
+        "Password": "<G\"p*bRBr/_",
         "Characters": 11,
         "Entropy": 72
       }
     ]
+
 
 ## Dockerfile
 
