@@ -209,8 +209,11 @@ module.exports = {
 
   whitespace: function(useEntropy) {
     const s = [
-      // Non-zero width, horizontal, non-graphical spaces/blanks
-      '\u{0009}', // Character tabulation
+      /**
+       * Non-zero width, horizontal, non-graphical spaces/blanks
+       * Character tabulation \u{0009} won't print with a background color
+       */
+    //'\u{0009}', // Character tabulation
       '\u{0020}', // Space
       '\u{00A0}', // Non-breaking space
       '\u{2000}', // En quad
@@ -230,6 +233,7 @@ module.exports = {
       '\u{205F}', // Medium mathematical space
       '\u{2800}', // Braille pattern blank
       '\u{3000}', // Ideographic space
+      '\u{3164}', // Hangul filler
       '\u{FFA0}', // Halfwidth hangul filler
       // Zero width, non-control spaces/blanks
       '\u{115F}', // Hangul choseong filler
@@ -239,16 +243,13 @@ module.exports = {
       '\u{200C}', // Zero width non-joiner
       '\u{200D}', // Zero width joiner
       '\u{2060}', // Word joiner
-      '\u{3164}', // Hangul filler
       '\u{FEFF}', // Zero width non-breaking space
     ]
     const assocArr = {}
     const entropy = main.getEntropy()
     const len = Math.ceil(entropy / Math.log2(s.length))
 
-    let pass = '"'
-    pass += main.generatePass(len, s, false, useEntropy)
-    pass += '"'
+    let pass = '\x1b[41m' + main.generatePass(len, s, false, useEntropy) + '\x1b[0m'
 
     assocArr.Generator = 'Random'
     assocArr.Wordlist = 'Whitespace'
