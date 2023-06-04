@@ -183,9 +183,9 @@ module.exports = {
       let vans = []
   
       for (let i = 0; i < len; i++) {
-          vans[i]  = main.generatePass(1, wordlist[0], true, useEntropy)
-          vans[i] += main.generatePass(1, wordlist[1], true, useEntropy)
-          vans[i] += main.generatePass(1, wordlist[2], true, useEntropy)
+        vans[i]  = main.generatePass(1, wordlist[0], true, useEntropy)
+        vans[i] += main.generatePass(1, wordlist[1], true, useEntropy)
+        vans[i] += main.generatePass(1, wordlist[2], true, useEntropy)
       }
   
       pass = vans.join(" ")
@@ -196,7 +196,7 @@ module.exports = {
       let results
   
       do {
-        results = this.generateAcronym(counter, wordlist, useEntropy)
+        results = this.acronym(counter, wordlist, useEntropy)
         counter++
       } while (results.security < entropy)
   
@@ -229,7 +229,7 @@ module.exports = {
    * @param {Boolean} useEntropy - Boolean to use collected entropy.
    * @return {Object} - Dictionary containing the passphrase and its security.
    */
-  generateAcronym: function(wordCount, wordlist, useEntropy) {
+  acronym: function(wordCount, wordlist, useEntropy) {
     var getSecurity = function (entropyList) {
       let total = 0
   
@@ -273,6 +273,10 @@ module.exports = {
       if (args.includes('-j') || args.includes('--json')) {
           passphraseWords[i] = word
       } else {
+        /**
+         * https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+         * \x1b[CODE
+         */
           passphraseWords[i] = '\x1b[31m' + word[0] + '\x1b[0m' + word.substring(1) 
       }
     }
