@@ -7,7 +7,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
    * @returns {Object} An associative array of the generated password and its meta.
    */
-  generatePseudowords: function(useEntropy) {
+  genPass: function(useEntropy) {
     const assocArr = {}
 
     let checksum = false
@@ -22,35 +22,35 @@ module.exports = {
     }
   
     if (pseudoSet.toLowerCase() === 'apple') {
-      ret = this.generateApple(useEntropy)
+      ret = this.apple(useEntropy)
       assocArr.SetSize = "It's complicated."
     } else if (pseudoSet.toLowerCase() === 'babble') {
       checksum = true
-      ret = this.generateBabble(useEntropy)
+      ret = this.babble(useEntropy)
       assocArr.SetSize = "65,536 pseudowords"
     } else if (pseudoSet.toLowerCase() === 'daefen') {
-      ret = this.generateDaefen(useEntropy)
+      ret = this.daefen(useEntropy)
       assocArr.SetSize = "3,456 syllables"
     } else if (pseudoSet.toLowerCase() === 'dibels') {
-      ret = this.generateDibels(useEntropy)
+      ret = this.dibels(useEntropy)
     } else if (pseudoSet.toLowerCase() === 'koremutake') {
-      ret = this.generateKoremutake(useEntropy)
+      ret = this.koremutake(useEntropy)
       assocArr.SetSize = "128 syllables"
     } else if (pseudoSet.toLowerCase() === 'lepron') {
-      ret = this.generateLepron(useEntropy)
+      ret = this.lepron(useEntropy)
       assocArr.SetSize = "362,797,056 pseudowords"
     } else if (pseudoSet.toLowerCase() === 'letterblock') {
       checksum = true
-      ret = this.generateLetterblock(useEntropy)
+      ret = this.letterblock(useEntropy)
       assocArr.SetSize = "1,679,616 blocks"
     } else if (pseudoSet.toLowerCase() === 'munemo') {
-      ret = this.generateMunemo(useEntropy)
+      ret = this.munemo(useEntropy)
       assocArr.SetSize = "100 syllables"
     } else if (pseudoSet.toLowerCase() === 'proquints') {
-      ret = this.generateProquints(useEntropy)
+      ret = this.proquints(useEntropy)
       assocArr.SetSize = "65,536 pseudowords"
     } else if (pseudoSet.toLowerCase() === 'urbit') {
-      ret = this.generateUrbit(useEntropy)
+      ret = this.urbit(useEntropy)
       assocArr.SetSize = "65,536 pseudowords"
     } else {
       console.log('Unknown generator:', pseudoSet)
@@ -79,7 +79,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} The password string, the length of the password, and the entropy of the password.
    */
-  generateApple: function(useEntropy) {
+  apple: function(useEntropy) {
     /**
      * Calculate the entropy of an Apple password containing n-blocks.
      * @param {number} n - The number of blocks in the password.
@@ -160,7 +160,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} The password string, the length of the password, and the entropy of the password.
    */
-  generateBabble: function(useEntropy) {
+  babble: function(useEntropy) {
     // Spec: https://web.mit.edu/kenta/www/one/bubblebabble/spec/jrtrjwzi/draft-huima-01.txt
     // Code based on https://github.com/kpalin/bubblepy
     const vowels = 'aeiouy'
@@ -207,7 +207,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} The password string, the length of the password, and the entropy of the password.
    */
-  generateDaefen: function(useEntropy) {
+  daefen: function(useEntropy) {
     const syllables = []
     const consonants = 'bcdfghjklmnprstvwz'
     const vowels = 'aeiouy'
@@ -301,7 +301,7 @@ module.exports = {
    * @param {Boolian} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} - The password string, the length of the password, and the entropy of the password.
    */
-  generateDibels: function(useEntropy) {
+  dibels: function(useEntropy) {
     // Word lists taken from:
     //   - 6th edition progress monitoring materials: https://web.archive.org/web/20191102033345/https://dibels.uoregon.edu/assessment/index/materialdownload?agree=true#dibels
     //   - 8th edition benchmark materials: https://dibels.uoregon.edu/materials/dibels#materials
@@ -322,7 +322,7 @@ module.exports = {
     return [pass, pass.replace(/\s/g, '').length, Math.floor(wordCount * Math.log2(wordList.length))]
   },
 
-  generateKoremutake: function(useEntropy) {
+  koremutake: function(useEntropy) {
     var tos = function (num, str) {
       const koremutake = [
         'ba',  'be',  'bi',  'bo',  'bu',  'by',  'da',  'de',
@@ -372,7 +372,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Object} An associative array of the generated passphrase and its meta.
    */
-  generateLepron: function(useEntropy) {
+  lepron: function(useEntropy) {
     // https://www.cambridgeclarion.org/34.html
     const start = [
      ['c','cp'], ['b','bh'], ['p','xm'], ['d','bs'], ['r','ts'], ['s','chl'],
@@ -460,7 +460,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} The password string, the length of the password, and the entropy of the password.
    */
-  generateLetterblock: function(useEntropy) {
+  letterblock: function(useEntropy) {
     // https://www.draketo.de/software/letterblock-diceware
     // Diverged from above with:
     //  - '$' and '%' appended to make the checksum delimiters 6 characters
@@ -626,7 +626,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} An array containing the password, its length, and the entropy used.
    */
-  generateMunemo: function(useEntropy) {
+  munemo: function(useEntropy) {
     // https://github.com/jmettraux/munemo
     /**
      * Recursive function to build an encoded string from a given number.
@@ -686,7 +686,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} The password string, the length of the password, and the entropy of the password.
    */
-  generateProquints: function(useEntropy) {
+  proquints: function(useEntropy) {
     // https://arxiv.org/html/0901.4016
     const vowels = 'aiou'
     const consonants = 'bdfghjklmnprstvz'
@@ -718,7 +718,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Array} The password string, the length of the password, and the entropy of the password.
    */
-  generateUrbit: function(useEntropy) {
+  urbit: function(useEntropy) {
     const prefixes = [
       "doz", "mar", "bin", "wan", "sam", "lit", "sig", "hid", "fid", "lis", "sog", "dir", "wac", "sab", "wis", "sib",
       "rig", "sol", "dop", "mod", "fog", "lid", "hop", "dar", "dor", "lor", "hod", "fol", "rin", "tog", "sil", "mir",

@@ -133,19 +133,19 @@ if (args.includes('-k') || args.includes('--keyboard')) {
 } else if (generator !== undefined && generator !== null) {
   // otherwise generate passwords from a specific generator
   if (generator.toLowerCase() === 'alternate') {
-    results.push(alternate.generateAlternate(useEntropy))
+    results.push(alternate.genPass(useEntropy))
   } else if (generator.toLowerCase() === 'bitcoin') {
-    results.push(currency.generateBitcoin(useEntropy))
+    results.push(currency.bitcoin(useEntropy))
   } else if (generator.toLowerCase() === 'monero') {
-    results.push(currency.generateMonero(useEntropy))
+    results.push(currency.monero(useEntropy))
   } else if (generator.toLowerCase() === 'diceware') {
-    results.push(diceware.generateDiceware(useEntropy))
+    results.push(diceware.genPass(useEntropy))
   } else if (generator.toLowerCase() === 'eff') {
-    results.push(eff.generateEff(useEntropy))
+    results.push(eff.genPass(useEntropy))
   } else if (generator.toLowerCase() === 'pseudowords') {
-    results.push(pseudo.generatePseudowords(useEntropy))
+    results.push(pseudo.genPass(useEntropy))
   } else if (generator.toLowerCase() === 'random') {
-    results.push(random.generateRandom(useEntropy))
+    results.push(random.genPass(useEntropy))
   } else {
     const option = args.findIndex((option) => option === '-o' || option === '--only')
     console.log('Unknown generator:', args[option + 1])
@@ -153,16 +153,16 @@ if (args.includes('-k') || args.includes('--keyboard')) {
   }
 } else {
   // otherwise generate all the passwords
-  results.push(alternate.generateAlternate(useEntropy))
+  results.push(alternate.genPass(useEntropy))
   if (args.includes('-M') || args.includes('--monero')) {
-      results.push(currency.generateMonero(useEntropy))
+      results.push(currency.monero(useEntropy))
   } else {
-      results.push(currency.generateBitcoin(useEntropy))
+      results.push(currency.bitcoin(useEntropy))
   }
-  results.push(diceware.generateDiceware(useEntropy))
-  results.push(eff.generateEff(useEntropy))
-  results.push(pseudo.generatePseudowords(useEntropy))
-  results.push(random.generateRandom(useEntropy))
+  results.push(diceware.genPass(useEntropy))
+  results.push(eff.genPass(useEntropy))
+  results.push(pseudo.genPass(useEntropy))
+  results.push(random.genPass(useEntropy))
 }
 
 if (args.includes('-j') || args.includes('--json')) {

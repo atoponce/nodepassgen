@@ -8,7 +8,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
    * @returns {Object} An associative array of the generated password and its meta.
    */
-  generateSet: function(b, useEntropy) {
+  getSet: function(b, useEntropy) {
     const entropy = main.getEntropy()
     const assocArr = {}
     let checksum = false
@@ -123,7 +123,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
    * @returns {Object} An associative array of the generated password and its meta from the correctly determined helper function.
    */
-  generateRandom: function(useEntropy) {
+  genPass: function(useEntropy) {
     let assocArr
     let randSet
   
@@ -135,45 +135,45 @@ module.exports = {
     }
   
     if (randSet.toLowerCase() === 'base256') {
-      assocArr = this.generateSet(256, useEntropy)
+      assocArr = this.getSet(256, useEntropy)
     } else if (randSet.toLowerCase() === 'base220') {
-      assocArr = this.generateSet(220, useEntropy)
+      assocArr = this.getSet(220, useEntropy)
     } else if (randSet.toLowerCase() === 'base188') {
-      assocArr = this.generateSet(188, useEntropy)
+      assocArr = this.getSet(188, useEntropy)
     } else if (randSet.toLowerCase() === 'base94') {
-      assocArr = this.generateSet(94, useEntropy)
+      assocArr = this.getSet(94, useEntropy)
     } else if (randSet.toLowerCase() === 'base85') {
-      assocArr = this.generateSet(85, useEntropy)
+      assocArr = this.getSet(85, useEntropy)
     } else if (randSet.toLowerCase() === 'base64') {
-      assocArr = this.generateSet(64, useEntropy)
+      assocArr = this.getSet(64, useEntropy)
     } else if (randSet.toLowerCase() === 'base62') {
-      assocArr = this.generateSet(62, useEntropy)
+      assocArr = this.getSet(62, useEntropy)
     } else if (randSet.toLowerCase() === 'base58') {
-      assocArr = this.generateSet(58, useEntropy)
+      assocArr = this.getSet(58, useEntropy)
     } else if (randSet.toLowerCase() === 'base52') {
-      assocArr = this.generateSet(52, useEntropy)
+      assocArr = this.getSet(52, useEntropy)
     } else if (randSet.toLowerCase() === 'base45') {
-      assocArr = this.generateSet(45, useEntropy)
+      assocArr = this.getSet(45, useEntropy)
     } else if (randSet.toLowerCase() === 'base36') {
-      assocArr = this.generateSet(36, useEntropy)
+      assocArr = this.getSet(36, useEntropy)
     } else if (randSet.toLowerCase() === 'base32') {
-      assocArr = this.generateSet(32, useEntropy)
+      assocArr = this.getSet(32, useEntropy)
     } else if (randSet.toLowerCase() === 'base26') {
-      assocArr = this.generateSet(26, useEntropy)
+      assocArr = this.getSet(26, useEntropy)
     } else if (randSet.toLowerCase() === 'base16') {
-      assocArr = this.generateSet(16, useEntropy)
+      assocArr = this.getSet(16, useEntropy)
     } else if (randSet.toLowerCase() === 'base10') {
-      assocArr = this.generateSet(10, useEntropy)
+      assocArr = this.getSet(10, useEntropy)
     } else if (randSet.toLowerCase() === 'base8') {
-      assocArr = this.generateSet(8, useEntropy)
+      assocArr = this.getSet(8, useEntropy)
     } else if (randSet.toLowerCase() === 'base4') {
-      assocArr = this.generateSet(4, useEntropy)
+      assocArr = this.getSet(4, useEntropy)
     } else if (randSet.toLowerCase() === 'base2') {
-      assocArr = this.generateSet(2, useEntropy)
+      assocArr = this.getSet(2, useEntropy)
     } else if (randSet.toLowerCase() === 'emoji') {
-      assocArr = this.generateEmoji(useEntropy)
+      assocArr = this.emoji(useEntropy)
     } else if (randSet.toLowerCase() === 'whitespace') {
-      assocArr = this.generateWhitespace(useEntropy)
+      assocArr = this.whitespace(useEntropy)
     } else {
       console.log('Unknown set:', randSet)
       process.exit(1)
@@ -187,7 +187,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the entropy in the data file.
    * @returns {Object} An associative array of the generated password and its meta.
    */
-  generateEmoji: function(useEntropy) {
+  emoji: function(useEntropy) {
     const emojiWordlist = require('../lists/random_emoji')
     const wordlist = main.uniquesOnly(emojiWordlist.wordlist)
     const entropy = main.getEntropy()
@@ -202,12 +202,12 @@ module.exports = {
     assocArr.Password = pass
     assocArr.Characters = len
     assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
-    assocArr.SetSize = emojiWordlist.length.toLocaleString() + " emoji"
+    assocArr.SetSize = wordlist.length.toLocaleString() + " emoji"
   
     return assocArr
   },
 
-  generateWhitespace: function(useEntropy) {
+  whitespace: function(useEntropy) {
     const s = [
       // Non-zero width, horizontal, non-graphical spaces/blanks
       '\u{0009}', // Character tabulation

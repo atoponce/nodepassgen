@@ -8,7 +8,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Object} An associative array of the generated passphrase and its meta.
    */
-  generateBitcoin: function(useEntropy) {
+  bitcoin: function(useEntropy) {
     let lang
     let pass = ''
     let wordlist = []
@@ -124,7 +124,7 @@ module.exports = {
    * @param {boolean} useEntropy - Whether or not to use the data in the entropy file.
    * @returns {Object} An associative array of the generated passphrase and its meta.
    */
-  generateMonero: function(useEntropy) {
+  monero: function(useEntropy) {
     /**
      * Calculate the CRC32 of a string.
      * @param {string} string - The string to calculate.
