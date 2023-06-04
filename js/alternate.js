@@ -268,16 +268,10 @@ module.exports = {
     }
   
     for (let i = 0; i < passphraseWords.length; i++) {
-      const word = passphraseWords[i]
-  
-      if (args.includes('-j') || args.includes('--json')) {
-          passphraseWords[i] = word
-      } else {
-        /**
-         * https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-         * \x1b[CODE
-         */
-          passphraseWords[i] = '\x1b[31m' + word[0] + '\x1b[0m' + word.substring(1) 
+      if (! args.includes('-j') && ! args.includes('--json')) {
+        // https://en.wikipedia.org/wiki/ANSI_escape_code#Colors - \x1b[CODE
+        const word = passphraseWords[i]
+        passphraseWords[i] = '\x1b[31m' + word[0] + '\x1b[0m' + word.substring(1) 
       }
     }
   

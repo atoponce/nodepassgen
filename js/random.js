@@ -249,7 +249,12 @@ module.exports = {
     const entropy = main.getEntropy()
     const len = Math.ceil(entropy / Math.log2(s.length))
 
-    let pass = '\x1b[41m' + main.generatePass(len, s, false, useEntropy) + '\x1b[0m'
+    let pass = main.generatePass(len, s, false, useEntropy)
+
+    if (! args.includes('-j') && ! args.includes('--json')) {
+      // https://en.wikipedia.org/wiki/ANSI_escape_code#Colors - \x1b[CODE
+      pass = '\x1b[41m' + pass + '\x1b[0m'
+    }
 
     assocArr.Generator = 'Random'
     assocArr.Wordlist = 'Whitespace'
