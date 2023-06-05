@@ -245,11 +245,12 @@ module.exports = {
       '\u{2060}', // Word joiner
       '\u{FEFF}', // Zero width non-breaking space
     ]
+
     const assocArr = {}
     const entropy = main.getEntropy()
     const len = Math.ceil(entropy / Math.log2(s.length))
 
-    let pass = main.generatePass(len, s, false, useEntropy)
+    let pass = "\u{00A0}" + main.generatePass(len, s, false, useEntropy) + "\u{00A0}"
 
     if (! args.includes('-j') && ! args.includes('--json')) {
       // https://en.wikipedia.org/wiki/ANSI_escape_code#Colors - \x1b[CODE
