@@ -27,7 +27,7 @@ function printUsage() {
   console.log('                                 LOTR, Mongolian, PGP, Pokerware, Rockyou,')
   console.log('                                 Serbian, Shavian, Simpsons, S/KEY, Trump,')
   console.log('                                 Ukranian, VAN, Wordle.')
-  console.log('                               NOTE: "English" combines every English word list.')
+  console.log('                               NOTE: "Everything" combines every English word list.')
   console.log('  -b, --bitcoin LANGUAGE     Choose a Bitcoin language. Default is English.')
   console.log('                               LANGUAGE must be one of:')
   console.log('                                Chinese, Czech, English, French, Italian,')
