@@ -57,7 +57,7 @@ module.exports = {
       }
     }
 
-    return pass.trim()
+    return pass
   },
 
   /**

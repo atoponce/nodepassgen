@@ -222,7 +222,7 @@ module.exports = {
     const entropy = Math.ceil(main.getEntropy() / 32) * 32 // Multiple of 32 bits
     const len = Math.ceil(entropy / Math.log2(wordlist.length))
   
-    pass = main.generatePass(len, wordlist, true, useEntropy).split(' ')
+    pass = main.generatePass(len, wordlist, true, useEntropy).trim().split(' ')
   
     let prefixes = ''
   

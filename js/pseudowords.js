@@ -313,7 +313,7 @@ module.exports = {
     const entropy = main.getEntropy()
     const wordCount = Math.ceil(entropy / Math.log2(wordList.length))
 
-    let pass = main.generatePass(wordCount, wordList, true, useEntropy)
+    let pass = main.generatePass(wordCount, wordList, true, useEntropy).trim()
 
     if (args.includes('-H') || args.includes('--hyphenate')) {
       pass = pass.split(' ').join('-')

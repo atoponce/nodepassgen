@@ -56,7 +56,7 @@ module.exports = {
     const assocArr = {}
     const entropy = main.getEntropy()
     const len = Math.ceil(entropy / Math.log2(wordlist.length))
-    let pass = main.generatePass(len, wordlist, true, useEntropy)
+    let pass = main.generatePass(len, wordlist, true, useEntropy).trim()
   
     if (args.includes('-H') || args.includes('--hyphenate')) {
       pass = pass.split(' ').join('-')

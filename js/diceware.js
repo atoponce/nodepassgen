@@ -193,7 +193,7 @@ module.exports = {
     } else {
       // Every other Diceware word list.
       len = Math.ceil(entropy / Math.log2(wordlist.length))
-      pass = main.generatePass(len, wordlist, true, useEntropy)
+      pass = main.generatePass(len, wordlist, true, useEntropy).trim()
       assocArr.SetSize = wordlist.length.toLocaleString() + " words"
     }
   

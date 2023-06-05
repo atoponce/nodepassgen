@@ -188,7 +188,7 @@ module.exports = {
         vans[i] += main.generatePass(1, wordlist[2], true, useEntropy)
       }
   
-      pass = vans.join(" ")
+      pass = vans.join(" ").trim()
       assocArr.Entropy = Math.floor(len * vanEntropy)
       assocArr.SetSize = setSize.toLocaleString() + " words"
     } else if (altSet.toLowerCase() === 'acronym') {
@@ -205,7 +205,7 @@ module.exports = {
     } else {
       const len = Math.ceil(entropy / Math.log2(wordlist.length))
   
-      pass = main.generatePass(len, wordlist, true, useEntropy)
+      pass = main.generatePass(len, wordlist, true, useEntropy).trim()
       assocArr.Entropy = Math.floor(len * Math.log2(wordlist.length))
       assocArr.SetSize = wordlist.length.toLocaleString() + " words"
     }
