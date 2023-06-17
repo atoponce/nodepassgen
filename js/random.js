@@ -250,7 +250,7 @@ module.exports = {
     const entropy = main.getEntropy()
     const len = Math.ceil(entropy / Math.log2(s.length))
 
-    let pass = "\u{00A0}" + main.generatePass(len, s, false, useEntropy) + "\u{00A0}"
+    let pass = "\u{2800}" + main.generatePass(len, s, false, useEntropy) + "\u{2800}"
 
     if (! args.includes('-j') && ! args.includes('--json')) {
       // https://en.wikipedia.org/wiki/ANSI_escape_code#Colors - \x1b[CODE
