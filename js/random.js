@@ -216,6 +216,7 @@ module.exports = {
     //'\u{0009}', // Character tabulation
       '\u{0020}', // Space
       '\u{00A0}', // Non-breaking space
+      '\u{00AD}', // Soft hyphen
       '\u{2000}', // En quad
       '\u{2001}', // Em quad
       '\u{2002}', // En space
@@ -236,6 +237,7 @@ module.exports = {
       '\u{3164}', // Hangul filler
       '\u{FFA0}', // Halfwidth hangul filler
       // Zero width, non-control spaces/blanks
+      '\u{034F}', // Combining grapheme joiner
       '\u{115F}', // Hangul choseong filler
       '\u{1160}', // Hangul Jungseong filler
       '\u{180E}', // Mongolian vowel separator
