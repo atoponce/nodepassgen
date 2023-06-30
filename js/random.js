@@ -211,12 +211,10 @@ module.exports = {
     const s = [
       /**
        * Non-zero width, horizontal, non-graphical spaces/blanks
-       * Character tabulation \u{0009} won't print with a background color
        */
-    //'\u{0009}', // Character tabulation
+      '\u{0009}', // Character tabulation
       '\u{0020}', // Space
       '\u{00A0}', // Non-breaking space
-      '\u{00AD}', // Soft hyphen
       '\u{2000}', // En quad
       '\u{2001}', // Em quad
       '\u{2002}', // En space
@@ -245,6 +243,7 @@ module.exports = {
       '\u{200C}', // Zero width non-joiner
       '\u{200D}', // Zero width joiner
       '\u{2060}', // Word joiner
+      '\u{2063}', // Invisible separator
       '\u{FEFF}', // Zero width non-breaking space
     ]
 
@@ -255,8 +254,7 @@ module.exports = {
     let pass = "\u{2800}" + main.generatePass(len, s, false, useEntropy) + "\u{2800}"
 
     if (! args.includes('-j') && ! args.includes('--json')) {
-      // https://en.wikipedia.org/wiki/ANSI_escape_code#Colors - \x1b[CODE
-      pass = '\x1b[41m' + pass + '\x1b[0m'
+      pass = '"' + pass + '"'
     }
 
     assocArr.Generator = 'Random'
